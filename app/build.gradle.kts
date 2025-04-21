@@ -1,6 +1,3 @@
-import org.gradle.internal.impldep.org.jsoup.nodes.Entities.EscapeMode.extended
-import org.gradle.kotlin.dsl.implementation
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -40,6 +37,9 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.0"  // Versiyonu kontrol et
+    }
 }
 
 dependencies {
@@ -52,6 +52,16 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // Manual olarak viewModel-compose bağımlılığını ekliyoruz
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation (libs.material3)
+    implementation("androidx.compose.material:material-icons-extended:1.5.2")
+    implementation(libs.androidx.navigation.common.ktx)
+    implementation(libs.androidx.navigation.compose)
+
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -59,8 +69,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation ("androidx.compose.material:material-icons-extended")
-    implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.0") // FontAwesome
-//    implementation("br.com.devsrsouza.compose.icons:material-design-icons:1.1.0") // Material Icons
-
 }
