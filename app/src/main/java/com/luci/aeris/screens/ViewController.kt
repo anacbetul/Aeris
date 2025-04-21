@@ -12,7 +12,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.luci.aeris.MainActivityPreview
 import com.luci.aeris.ui.theme.AerisTheme
 
 @Composable
@@ -25,11 +24,15 @@ fun ViewController() {
                 onClick = {},
                 containerColor = MaterialTheme.colorScheme.onPrimary,
                 contentColor = MaterialTheme.colorScheme.tertiary
-            ) { Icon(Icons.Outlined.Add,contentDescription = "buton") }
+            ) { Icon(Icons.Outlined.Add, contentDescription = "buton") }
         },
 
         floatingActionButtonPosition = FabPosition.End,
-    ) { innerPadding -> Box(modifier = Modifier.padding(innerPadding)){ MainScreen() } }
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            Profile()
+        }
+    }
 }
 
 @Preview(showBackground = true)
