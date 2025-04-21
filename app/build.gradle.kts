@@ -37,6 +37,9 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.0"  // Versiyonu kontrol et
+    }
 }
 
 dependencies {
@@ -49,6 +52,16 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // Manual olarak viewModel-compose bağımlılığını ekliyoruz
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation (libs.material3)
+    implementation("androidx.compose.material:material-icons-extended:1.5.2")
+    implementation(libs.androidx.navigation.common.ktx)
+    implementation(libs.androidx.navigation.compose)
+
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
