@@ -30,7 +30,7 @@ fun ViewController() {
         floatingActionButtonPosition = FabPosition.End,
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            Profile()
+ChooseOutfitScreen()
         }
     }
 }

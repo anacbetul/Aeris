@@ -3,7 +3,12 @@ package com.luci.aeris.screens
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.rounded.AccessibilityNew
+import androidx.compose.material.icons.sharp.Add
+import androidx.compose.material.icons.twotone.Air
+import androidx.compose.material.icons.twotone.Preview
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Icon
@@ -13,12 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import compose.icons.FontAwesomeIcons
-import compose.icons.fontawesomeicons.Solid
-import compose.icons.fontawesomeicons.solid.GripVertical
-import compose.icons.fontawesomeicons.solid.Home
-import compose.icons.fontawesomeicons.solid.Plus
-import compose.icons.fontawesomeicons.solid.Tshirt
 
 
 @Composable
@@ -31,7 +30,8 @@ fun BottomBar() {
         actions = {
             IconButton(onClick = { /* do something */ }, modifier = Modifier.weight(1f)) {
                 Icon(
-                    FontAwesomeIcons.Solid.Home,
+                    Icons.Default.Home,
+
                     modifier = Modifier.size(36.dp),
                     contentDescription = "Localized description",
 
@@ -39,21 +39,21 @@ fun BottomBar() {
             }
             IconButton(onClick = { /* do something */ }, modifier = Modifier.weight(1f)) {
                 Icon(
-                    FontAwesomeIcons.Solid.Tshirt,
+                    Icons.TwoTone.Preview,
                     modifier = Modifier.size(36.dp),
                     contentDescription = "Localized description",
                 )
             }
             IconButton(onClick = { /* do something */ }, modifier = Modifier.weight(1f)) {
                 Icon(
-                    FontAwesomeIcons.Solid.Plus,
+                    Icons.Sharp.Add,
                     modifier = Modifier.size(36.dp),
                     contentDescription = "Localized description",
                 )
             }
             IconButton(onClick = { /* do something */ }, modifier = Modifier.weight(1f)) {
                 Icon(
-                    FontAwesomeIcons.Solid.GripVertical,
+                    Icons.Rounded.AccessibilityNew,
                     modifier = Modifier.size(36.dp),
                     contentDescription = "Localized description",
                 )
