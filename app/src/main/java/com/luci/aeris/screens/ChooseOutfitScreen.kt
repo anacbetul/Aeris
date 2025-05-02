@@ -30,9 +30,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luci.aeris.R
+import com.luci.aeris.utils.Navigator
 
 @Composable
-fun ChooseOutfitScreen() {
+fun ChooseOutfitScreen(navigator: Navigator) {
     var rowCount: Int = 6
     var cardCount: Int = 10
     Column(modifier = Modifier.fillMaxSize()) {
@@ -111,8 +112,8 @@ fun ItemCard(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun ChooseOutfitScreenPreview() {
-    ChooseOutfitScreen()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ChooseOutfitScreenPreview() {
+//    ChooseOutfitScreen()
+//}

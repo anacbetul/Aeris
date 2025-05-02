@@ -45,9 +45,10 @@ import androidx.compose.ui.modifier.modifierLocalOf
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luci.aeris.constants.StringConstants
+import com.luci.aeris.utils.Navigator
 
 @Composable
-fun Profile() {
+fun Profile(navigator: Navigator) {
     val isDarkMode = remember { mutableStateOf(false) }
     var selectedGender by remember { mutableStateOf("") }
     val email = "kullanici@mail.com"
@@ -215,8 +216,8 @@ fun GenderDropdownMenu(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun ProfilePreview() {
-    Profile()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ProfilePreview() {
+//    Profile()
+//}

@@ -21,12 +21,13 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luci.aeris.ui.theme.AerisTheme
+import com.luci.aeris.utils.Navigator
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 
 @Composable
-fun MainScreen() {
+fun MainScreen(navigator:Navigator) {
     val configuration = LocalConfiguration.current
 
     val screenWidth = configuration.screenWidthDp.dp
@@ -82,13 +83,13 @@ fun MainScreen() {
 
 
 
-@Preview(showBackground = true)
-@Composable
-fun MainActivityPreview() {
-    AerisTheme {
-
-        MainScreen()
-
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun MainActivityPreview() {
+//    AerisTheme {
+//
+//        MainScreen()
+//
+//    }
+//}
 

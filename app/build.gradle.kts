@@ -27,41 +27,54 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
     }
+
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.0"  // Versiyonu kontrol et
+        kotlinCompilerExtensionVersion = "1.5.2" // 1.4.0 eski, 1.5.2 önerilir
     }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
+
+    // Material2 (BottomNavigation buradan gelir)
+    implementation("androidx.compose.material:material")
+
+    // Material icons
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // Material3 (isteğe bağlı)
+    implementation(libs.material3)
+
+    // Compose UI
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
 
-    // Manual olarak viewModel-compose bağımlılığını ekliyoruz
+    // ViewModel - Compose
     implementation(libs.lifecycle.viewmodel.compose)
-    implementation (libs.material3)
-    implementation("androidx.compose.material:material-icons-extended:1.5.2")
-    implementation(libs.androidx.navigation.common.ktx)
-    implementation(libs.androidx.navigation.compose)
 
+    // Navigation - Compose
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 
-
+    // TEST
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
