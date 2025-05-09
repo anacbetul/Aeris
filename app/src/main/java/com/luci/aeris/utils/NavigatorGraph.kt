@@ -31,9 +31,9 @@ fun AppNavGraph(navHostController: NavHostController, navigator: Navigator) {
 //        composable(NavigationRoutes.AddClothes) {
 //            AddClothes(navigator = navigator)
 //        }
-//        composable(NavigationRoutes.Wardrobe) {
-//            Wardrobe(navigator = navigator)
-//        }
+        composable(NavigationRoutes.Wardrobe) {
+            Wardrobe(navigator = navigator)
+        }
         composable(NavigationRoutes.Profile) {
             Profile(navigator = navigator)
         }

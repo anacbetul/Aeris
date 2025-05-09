@@ -25,7 +25,7 @@ fun BottomNavigationBar(navController: NavController) {
         BottomNavItem("Main", Icons.Default.Home, NavigationRoutes.Main),
         BottomNavItem("Outfit", Icons.Default.Checkroom, NavigationRoutes.ChooseOutfit),
         BottomNavItem("Add", Icons.Default.Add, NavigationRoutes.AddClothes),
-        BottomNavItem("Wardrobe", Icons.Default.List, NavigationRoutes.Wardrobe),
+        BottomNavItem("Wardrobe", Icons.Default.CurtainsClosed, NavigationRoutes.Wardrobe),
         BottomNavItem("Profile", Icons.Default.Person, NavigationRoutes.Profile),
     )
 

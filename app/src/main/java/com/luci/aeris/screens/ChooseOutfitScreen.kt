@@ -61,15 +61,11 @@ fun ItemCard(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+//        verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(8.dp)
     ) {
         items(rowCount) { rowIndex ->
             val listState = rememberLazyListState()
-
-
-
-
             LazyRow(
                 state = listState,
                 flingBehavior = rememberSnapFlingBehavior(lazyListState = listState),
