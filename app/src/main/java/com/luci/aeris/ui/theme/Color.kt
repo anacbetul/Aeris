@@ -2,7 +2,7 @@ package com.luci.aeris.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val honeydew = Color(0xFFF1FAEE)
+val white = Color(0xFFFAFDFD)
 val nonPhotoBlue= Color(0xFFA8DADC)
 val cerulean = Color(0xFF457B9D)
 val berkeleyBlue = Color(0xFF1D3557)

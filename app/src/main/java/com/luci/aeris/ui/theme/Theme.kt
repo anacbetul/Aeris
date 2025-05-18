@@ -24,7 +24,7 @@ private val LightColorScheme = lightColorScheme(
     secondary =cerulean,
     tertiary = berkeleyBlue,
     onPrimary = sage,
-    background = honeydew
+    background = white
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),

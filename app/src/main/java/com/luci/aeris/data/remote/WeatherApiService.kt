@@ -1,5 +1,4 @@
 package com.luci.aeris.data.remote;
-import android.R.attr.apiKey
 import com.luci.aeris.domain.model.WeatherResponse
 import retrofit2.http.GET
 import retrofit2.http.Query

@@ -1,21 +1,23 @@
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Checkroom
-import androidx.compose.material.icons.filled.CurtainsClosed
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Checkroom
 import androidx.compose.material.icons.outlined.CurtainsClosed
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -47,7 +49,7 @@ fun BottomNavigationBar(navController: NavController) {
             .padding(horizontal = 16.dp, vertical = 10.dp)
             .height(75.dp)
             .background(
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                color = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
                 shape = RoundedCornerShape(24.dp)
             ),
         tonalElevation = 3.dp,
@@ -57,11 +59,11 @@ fun BottomNavigationBar(navController: NavController) {
             val selected = currentDestination == item.route
 
             val iconTint by animateColorAsState(
-                targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                targetValue = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant,
                 animationSpec = tween(300)
             )
             val labelColor by animateColorAsState(
-                targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                targetValue = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 animationSpec = tween(300)
             )
             val backgroundColor by animateColorAsState(

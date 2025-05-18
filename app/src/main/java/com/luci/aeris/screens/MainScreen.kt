@@ -1,7 +1,8 @@
 package com.luci.aeris.screens
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,15 +19,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.luci.aeris.presentation.ui.WeatherScreen
-import com.luci.aeris.ui.theme.AerisTheme
 import com.luci.aeris.utils.Navigator
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 
 @Composable
@@ -42,16 +40,6 @@ fun MainScreen(navigator: Navigator) {
     ) {
         WeatherScreen(viewModel = hiltViewModel())
 
-//            Card(
-//                modifier = Modifier
-////                            .background(color = MaterialTheme.colorScheme.secondary)
-//                    .size(screenWidth, screenHeight / 3)
-//                    .padding(8.dp),
-//
-//                shape = CardDefaults.outlinedShape,
-//                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
-//            ) { Text("weather") }
-
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier
@@ -65,7 +53,7 @@ fun MainScreen(navigator: Navigator) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1f), // kare kartlar
+                        .aspectRatio(1f),
                     elevation = CardDefaults.cardElevation(4.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {
