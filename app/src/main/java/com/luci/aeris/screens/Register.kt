@@ -260,7 +260,7 @@ fun RegisterScreen(navigator: Navigator) {
                             modifier = Modifier.size(24.dp)
                         )
                         HorizontalSpacer4()
-                        BodyText(StringConstants.signUpWithGoogle, textColor = Color.Black)
+                        BodyText(StringConstants.signUpWithGoogle)
                     }
 
                     VerticalSpacer16()

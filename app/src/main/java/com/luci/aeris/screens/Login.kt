@@ -247,7 +247,7 @@ fun LoginScreen(navigator: Navigator) {
                             modifier = Modifier.size(24.dp)
                         )
                         HorizontalSpacer4()
-                        BodyText(StringConstants.loginWithGoogle, textColor = Color.Black)
+                        BodyText(StringConstants.loginWithGoogle)
                     }
 
                     VerticalSpacer16()
@@ -265,7 +265,7 @@ fun LoginScreen(navigator: Navigator) {
                 VerticalSpacer8()
 
                 Row {
-                    BodyText(text = StringConstants.dontHaveAccount, textColor = Color.Black)
+                    BodyText(text = StringConstants.dontHaveAccount, fontSize = 14.sp, textColor = Color.Gray)
                     BodyText(
                         StringConstants.signUp,
                         textColor = MaterialTheme.colorScheme.primary,
@@ -295,7 +295,7 @@ fun LoginScreen(navigator: Navigator) {
                     contentColor = MaterialTheme.colorScheme.onErrorContainer,
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text(snackbarData.visuals.message)
+                    BodyText(snackbarData.visuals.message)
                 }
             }
         )
