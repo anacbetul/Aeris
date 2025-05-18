@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.luci.aeris" />
+                  <option name="mobileSdkAppId" value="1:632656989474:android:22042868ab13b72ee4697b" />
+                  <option name="projectId" value="ai-ris" />
+                  <option name="projectNumber" value="632656989474" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

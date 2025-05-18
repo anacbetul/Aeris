@@ -1,23 +1,27 @@
-package com.luci.aeris.screens
-
-
-
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.BottomAppBarDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Checkroom
+import androidx.compose.material.icons.filled.CurtainsClosed
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.luci.aeris.constants.NavigationRoutes
+import com.luci.aeris.domain.model.BottomNavItem
+
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
@@ -29,31 +33,87 @@ fun BottomNavigationBar(navController: NavController) {
         BottomNavItem("Profile", Icons.Default.Person, NavigationRoutes.Profile),
     )
 
-    BottomNavigation {
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
 
-        val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
+    NavigationBar(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .height(75.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                shape = RoundedCornerShape(24.dp)
+            ),
+        tonalElevation = 3.dp,
+        containerColor = Color.Transparent
+    ) {
         items.forEach { item ->
-            BottomNavigationItem(
-                modifier = Modifier.fillMaxWidth(),
-                selectedContentColor =  MaterialTheme.colorScheme.background,
-                unselectedContentColor = MaterialTheme.colorScheme.secondary,
-//                windowInsets = BottomAppBarDefaults.windowInsets,
-//                containerColor = MaterialTheme.colorScheme.background,
-//                contentColor = MaterialTheme.colorScheme.secondary,//secondary secilmeyen//TODO
-                icon = { Icon(item.icon, contentDescription = item.label) },
-                label = { Text(item.label) },
-                selected = currentDestination == item.route,
+            val selected = currentDestination == item.route
+
+            val iconTint by animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                animationSpec = tween(300)
+            )
+            val labelColor by animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                animationSpec = tween(300)
+            )
+            val backgroundColor by animateColorAsState(
+                targetValue = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent,
+                animationSpec = tween(300)
+            )
+
+            NavigationBarItem(
+                selected = selected,
                 onClick = {
-                    if (currentDestination != item.route) {
+                    if (!selected) {
                         navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId)
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true
+                            restoreState = true
                         }
                     }
-                }
+                },
+                icon = {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.height(64.dp) // Biraz daha yer ver
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(backgroundColor, shape = RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.label,
+                                tint = iconTint,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        // Sadece seçiliyse label göster
+                        if (selected) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            BodyText(
+                                text = item.label,
+                                textColor = labelColor, // Bu satır eksikti!
+                                maxLines = 1
+                            )
+                        }
+                    }
+                },
+
+                alwaysShowLabel = false,
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.Transparent,
+                    selectedIconColor = iconTint,
+                    unselectedIconColor = iconTint,
+                    selectedTextColor = labelColor,
+                    unselectedTextColor = labelColor
+                )
             )
         }
     }
 }
-
-data class BottomNavItem(val label: String, val icon: ImageVector, val route: String)

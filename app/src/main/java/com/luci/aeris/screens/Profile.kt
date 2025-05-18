@@ -46,9 +46,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luci.aeris.constants.StringConstants
 import com.luci.aeris.utils.Navigator
+import com.luci.aeris.viewmodel.ProfileViewModel
 
 @Composable
-fun Profile(navigator: Navigator) {
+fun Profile(navigator: Navigator,viewModel: ProfileViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val isDarkMode = remember { mutableStateOf(false) }
     var selectedGender by remember { mutableStateOf("") }
     val email = "kullanici@mail.com"
@@ -139,7 +140,7 @@ fun Profile(navigator: Navigator) {
                         )
                     }
                     Button(modifier = Modifier.align(alignment = Alignment.End),
-                        onClick = { /* çıkış işlemi */ },
+                        onClick = {  },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                     ) {
                         Text("Düzenle")
@@ -163,7 +164,7 @@ fun Profile(navigator: Navigator) {
         Row (modifier = Modifier.align(alignment = Alignment.End) ){
             // Çıkış ve Hesabı Sil Butonları
             Button(
-                onClick = { /* çıkış işlemi */ },
+                onClick = { viewModel.onSignOut(navigator)},
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {
                 Text("Çıkış Yap")

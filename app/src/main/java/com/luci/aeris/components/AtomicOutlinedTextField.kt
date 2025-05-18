@@ -1,5 +1,8 @@
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation.Companion.keyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -15,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.sp
-
 @Composable
 fun AtomicOutlinedTextField(
     modifier: Modifier = Modifier,
@@ -25,6 +27,9 @@ fun AtomicOutlinedTextField(
     isError: Boolean = false,
     errorText: String? = null,
     isPassword: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    prefix:@Composable() (() -> Unit)
 ) {
     val isPasswordVisible = remember { mutableStateOf(false) }
 
@@ -33,6 +38,7 @@ fun AtomicOutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             label = { Text(label) },
+            maxLines = 1,
             isError = isError,
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = if (isPassword && !isPasswordVisible.value) {
@@ -40,6 +46,7 @@ fun AtomicOutlinedTextField(
             } else {
                 VisualTransformation.None
             },
+            leadingIcon = prefix,
             trailingIcon = {
                 if (isPassword) {
                     IconButton(
@@ -56,7 +63,9 @@ fun AtomicOutlinedTextField(
                         )
                     }
                 }
-            }
+            },
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions
         )
         if (isError && errorText != null) {
             Text(
