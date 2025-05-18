@@ -10,6 +10,11 @@ import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.CurtainsClosed
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Checkroom
+import androidx.compose.material.icons.outlined.CurtainsClosed
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,20 +22,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.luci.aeris.constants.NavigationRoutes
+import com.luci.aeris.constants.StringConstants
 import com.luci.aeris.domain.model.BottomNavItem
 
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
-        BottomNavItem("Main", Icons.Default.Home, NavigationRoutes.Main),
-        BottomNavItem("Outfit", Icons.Default.Checkroom, NavigationRoutes.ChooseOutfit),
-        BottomNavItem("Add", Icons.Default.Add, NavigationRoutes.AddClothes),
-        BottomNavItem("Wardrobe", Icons.Default.CurtainsClosed, NavigationRoutes.Wardrobe),
-        BottomNavItem("Profile", Icons.Default.Person, NavigationRoutes.Profile),
+        BottomNavItem(StringConstants.main, Icons.Outlined.Home, NavigationRoutes.Main),
+        BottomNavItem(StringConstants.outfit, Icons.Outlined.Checkroom, NavigationRoutes.ChooseOutfit),
+        BottomNavItem(StringConstants.add, Icons.Outlined.Add, NavigationRoutes.AddClothes),
+        BottomNavItem(StringConstants.wardrobe, Icons.Outlined.CurtainsClosed, NavigationRoutes.Wardrobe),
+        BottomNavItem(StringConstants.profile, Icons.Outlined.Person, NavigationRoutes.Profile),
     )
 
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
@@ -61,7 +68,6 @@ fun BottomNavigationBar(navController: NavController) {
                 targetValue = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent,
                 animationSpec = tween(300)
             )
-
             NavigationBarItem(
                 selected = selected,
                 onClick = {
@@ -74,38 +80,31 @@ fun BottomNavigationBar(navController: NavController) {
                     }
                 },
                 icon = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.height(64.dp) // Biraz daha yer ver
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(backgroundColor, shape = RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(backgroundColor, shape = RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = item.label,
-                                tint = iconTint,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        // Sadece seçiliyse label göster
-                        if (selected) {
-                            Spacer(modifier = Modifier.height(2.dp))
-                            BodyText(
-                                text = item.label,
-                                textColor = labelColor, // Bu satır eksikti!
-                                maxLines = 1
-                            )
-                        }
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.label,
+                            tint = iconTint,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 },
-
-                alwaysShowLabel = false,
+                label = {
+                    if (selected) {
+                        Text(
+                            text = item.label,
+                            fontSize = 12.sp,
+                            color = labelColor,
+                            maxLines = 1
+                        )
+                    }
+                },
+                alwaysShowLabel = true,
                 colors = NavigationBarItemDefaults.colors(
                     indicatorColor = Color.Transparent,
                     selectedIconColor = iconTint,

@@ -47,7 +47,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.2" // 1.4.0 eski, 1.5.2 önerilir
+        kotlinCompilerExtensionVersion = "1.5.2"
     }
 }
 

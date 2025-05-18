@@ -28,5 +28,10 @@ class StringConstants {
         const val guestMail="guest@gmail.com"
         const val failToCreateUser= "Firestore register is failed"
         const val successLogin="You have successfully login."
+        const val main="Main"
+        const val outfit="Outfit"
+        const val add="Add"
+        const val wardrobe="Wardrobe"
+        const val profile="Profile"
     }
 }
