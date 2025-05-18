@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "632656989474",
+    "project_id": "ai-ris",
+    "storage_bucket": "ai-ris.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:632656989474:android:22042868ab13b72ee4697b",
+        "android_client_info": {
+          "package_name": "com.luci.aeris"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "632656989474-bu12f26eqqvu34kgq9jsgh04p2rjbr5o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luci.aeris",
+            "certificate_hash": "fd13950440f0893c127adcbba0fe079f1da951a9"
+          }
+        },
+        {
+          "client_id": "632656989474-9u6ocockh87e8fq60gcn7d1akvkg593u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKaP4ScRWKd8oO7AfRY23SZhlayQiTOV8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "632656989474-9u6ocockh87e8fq60gcn7d1akvkg593u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
