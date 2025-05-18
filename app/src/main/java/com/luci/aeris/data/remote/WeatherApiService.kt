@@ -1,9 +1,16 @@
 package com.luci.aeris.data.remote;
-import com.luci.aeris.data.remote.models.WeatherDto
+import android.R.attr.apiKey
 import com.luci.aeris.domain.model.WeatherResponse
 import retrofit2.http.GET
+import retrofit2.http.Query
+
 
 interface WeatherApiService {
-    @GET("bursa?unitGroup=metric&include=current%2Cdays&key=GCMQDJJFUGELFBYGTQLMVBDND&contentType=json")
-    suspend fun getWeather(): WeatherResponse
+    @GET("bursa")
+    suspend fun getWeather(
+        @Query("unitGroup") unitGroup: String = "metric",
+        @Query("include") include: String = "current,days",
+        @Query("key") apiKey: String,
+        @Query("contentType") contentType: String = "json"
+    ): WeatherResponse
 }
