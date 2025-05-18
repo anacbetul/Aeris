@@ -3,7 +3,7 @@ package com.luci.aeris.constants
 class StringConstants {
     companion object {
         const val title = "Aeris"
-        const val gender = "Cinsiyet"
+        const val gender = "Gender"
         const val signUp= "Sing Up"
         const val email="Email"
         const val password="Password"
@@ -33,5 +33,19 @@ class StringConstants {
         const val add="Add"
         const val wardrobe="Wardrobe"
         const val profile="Profile"
+        const val profilePhoto="Profile Photo"
+        const val accountInfo="Account Info"
+        const val emptyString=""
+        const val loggedGoogle="Logged in with Google account"
+        const val star= "*******"
+        const val edit="Edit"
+        const val darkMode="Dark Mode"
+        const val exit="Log Out"
+        const val deleteAccount="Delete Account"
+        const val woman="Woman"
+        const val man="Man"
+        const val other="Other"
+        const val selectGender="Select your gender"
+
     }
 }

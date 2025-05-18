@@ -1,66 +1,65 @@
 package com.luci.aeris.screens
 
+import BodyText
+import android.R.attr.label
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalOf
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.luci.aeris.constants.StringConstants
 import com.luci.aeris.utils.Navigator
 import com.luci.aeris.viewmodel.ProfileViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun Profile(navigator: Navigator,viewModel: ProfileViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun Profile(
+    navigator: Navigator,
+    viewModel: ProfileViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
+    var expanded by remember { mutableStateOf(false) }
     val isDarkMode = remember { mutableStateOf(false) }
     var selectedGender by remember { mutableStateOf("") }
-    val email = "kullanici@mail.com"
-    var expanded by remember { mutableStateOf(false) }
+    val user = viewModel.user
+    val isLoading = viewModel.isLoading
+    val scope = rememberCoroutineScope()
+
+    // Kullanıcıyı ilk kez yükle
+    LaunchedEffect(Unit) {
+        val currentUser = viewModel.authRepository.currentUser
+        currentUser?.uid?.let { uid ->
+            viewModel.loadUser(uid)
+        }
+    }
+
+    if (isLoading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(PaddingConstants.PagePadding)
     ) {
         Spacer(modifier = Modifier.height(32.dp))
+
         // Profil Fotoğrafı
         Box(
             modifier = Modifier
@@ -71,7 +70,7 @@ fun Profile(navigator: Navigator,viewModel: ProfileViewModel = androidx.lifecycl
         ) {
             Icon(
                 imageVector = Icons.Default.Person,
-                contentDescription = "Profil Fotoğrafı",
+                contentDescription = StringConstants.profilePhoto,
                 tint = Color.White,
                 modifier = Modifier
                     .size(60.dp)
@@ -85,11 +84,10 @@ fun Profile(navigator: Navigator,viewModel: ProfileViewModel = androidx.lifecycl
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .animateContentSize( // içeriğe göre animasyonla büyü
-                    animationSpec = tween(durationMillis = 100)
-                )
+                .animateContentSize(animationSpec = tween(durationMillis = 100))
         ) {
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -98,86 +96,93 @@ fun Profile(navigator: Navigator,viewModel: ProfileViewModel = androidx.lifecycl
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Hesap Bilgilerim",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                BodyText(StringConstants.accountInfo)
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = "Aç/Kapa"
+                    contentDescription = StringConstants.accountInfo
                 )
             }
 
-            // Animasyonlu görünürlük
             AnimatedVisibility(visible = expanded) {
                 Column {
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
-                        value = "kullanici@mail.com",
+                        value = user?.email ?: StringConstants.emptyString,
                         onValueChange = {},
-                        label = { Text("E-posta") },
+                        label = { BodyText(StringConstants.email) },
                         readOnly = true,
+                        enabled = false,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     OutlinedTextField(
-                        value = "********",
+                        value = if(user?.password== StringConstants.emptyString) StringConstants.loggedGoogle else StringConstants.star,
                         onValueChange = {},
-                        label = { Text("Şifre") },
+                        label = { BodyText(StringConstants.password) },
                         readOnly = true,
+                        enabled = false,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("${StringConstants.gender}: ", style = MaterialTheme.typography.bodyLarge)
+                        BodyText("${StringConstants.gender}: ")
                         GenderDropdownMenu(
                             selectedGender = selectedGender,
                             onGenderSelected = { selectedGender = it }
                         )
                     }
-                    Button(modifier = Modifier.align(alignment = Alignment.End),
-                        onClick = {  },
+
+                    Button(
+                        onClick = { /* Düzenleme işlemi */ },
+                        modifier = Modifier.align(Alignment.End),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                     ) {
-                        Text("Düzenle")
+                        BodyText(StringConstants.edit, textColor = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-            // Tema Ayarı
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Karanlık Mod", style = MaterialTheme.typography.bodyLarge)
+                BodyText(StringConstants.darkMode)
                 Switch(checked = isDarkMode.value, onCheckedChange = { isDarkMode.value = it })
             }
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
         }
+
         Spacer(modifier = Modifier.height(32.dp))
-        Row (modifier = Modifier.align(alignment = Alignment.End) ){
-            // Çıkış ve Hesabı Sil Butonları
+
+        Row(modifier = Modifier.align(Alignment.End)) {
             Button(
-                onClick = { viewModel.onSignOut(navigator)},
+                onClick = { viewModel.onSignOut(navigator) },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {
-                Text("Çıkış Yap")
+                BodyText(StringConstants.exit, textColor = MaterialTheme.colorScheme.onPrimary)
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-            TextButton(onClick = { /* hesap silme uyarısı aç */ }) {
-                Text("Hesabımı Sil", color = Color.Red)
+            TextButton(onClick = { /* hesap silme işlemi */ }) {
+                BodyText(StringConstants.deleteAccount, fontSize = 12.sp, textColor = Color.Red)
             }
         }
     }
 }
+
+
+
+
 
 @Composable
 fun GenderDropdownMenu(
@@ -185,27 +190,21 @@ fun GenderDropdownMenu(
     onGenderSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val genders = listOf("Kadın", "Erkek", "Diğer")
+    val genders = listOf(StringConstants.woman, StringConstants.man, StringConstants.other)
 
     Box {
-        TextButton(onClick = { expanded = true },colors = ButtonColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.secondary,
-            disabledContainerColor = MaterialTheme.colorScheme.secondary,
-            disabledContentColor = MaterialTheme.colorScheme.secondary,
-        )) {
-            Text(text = selectedGender.ifEmpty { "Cinsiyet Seç" })
+        TextButton(onClick = { expanded = true }, colors = ButtonDefaults.textButtonColors()) {
+            BodyText(text = selectedGender.ifEmpty { StringConstants.selectGender}, textColor = MaterialTheme.colorScheme.primary)
         }
 
         DropdownMenu(
-            modifier= Modifier.background(color = MaterialTheme.colorScheme.background),
+            modifier = Modifier.background(MaterialTheme.colorScheme.background),
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
             genders.forEach { gender ->
                 DropdownMenuItem(
-                    modifier= Modifier.background(color = MaterialTheme.colorScheme.background),
-                    text = { Text(gender, style = MaterialTheme.typography.bodyLarge) },
+                    text = { BodyText(gender) },
                     onClick = {
                         onGenderSelected(gender)
                         expanded = false
@@ -215,10 +214,3 @@ fun GenderDropdownMenu(
         }
     }
 }
-
-
-//@Preview(showBackground = true)
-//@Composable
-//fun ProfilePreview() {
-//    Profile()
-//}
