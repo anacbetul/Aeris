@@ -7,13 +7,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luci.aeris.constants.NavigationRoutes
-<<<<<<< HEAD
+
 import com.luci.aeris.domain.model.User
 import com.luci.aeris.domain.repository.FirebaseAuthRepository
 import com.luci.aeris.domain.repository.FirestoreUserRepository
-=======
-import com.luci.aeris.domain.repository.FirebaseAuthRepository
->>>>>>> b3eab201d63856be893dae9fc64ef28a14d57a7c
+
 import com.luci.aeris.utils.Navigator
 import kotlinx.coroutines.launch
 
