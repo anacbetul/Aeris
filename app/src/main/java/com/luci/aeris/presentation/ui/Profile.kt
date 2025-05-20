@@ -1,7 +1,6 @@
-package com.luci.aeris.screens
+package com.luci.aeris.presentation.ui
 
 import BodyText
-import android.R.attr.label
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
@@ -23,10 +22,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.luci.aeris.constants.StringConstants
+import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.presentation.viewmodel.ThemeViewModel
-import com.luci.aeris.utils.Navigator
-import com.luci.aeris.viewmodel.ProfileViewModel
+import com.luci.aeris.utils.navigator.Navigator
+import com.luci.aeris.presentation.viewmodel.ProfileViewModel
 
 @Composable
 fun Profile(

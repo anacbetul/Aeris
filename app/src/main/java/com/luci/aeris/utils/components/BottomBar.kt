@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.luci.aeris.constants.NavigationRoutes
-import com.luci.aeris.constants.StringConstants
+import com.luci.aeris.utils.constants.NavigationRoutes
+import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.domain.model.BottomNavItem
 
 

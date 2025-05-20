@@ -11,9 +11,9 @@ import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.luci.aeris.presentation.viewmodel.ThemeViewModel
-import com.luci.aeris.screens.ViewController
+import com.luci.aeris.utils.components.ViewController
 import com.luci.aeris.ui.theme.AerisTheme
-import com.luci.aeris.utils.Navigator
+import com.luci.aeris.utils.navigator.Navigator
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

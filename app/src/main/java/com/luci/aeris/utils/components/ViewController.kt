@@ -1,4 +1,4 @@
-package com.luci.aeris.screens
+package com.luci.aeris.utils.components
 
 
 import androidx.compose.runtime.Composable
@@ -7,8 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import com.luci.aeris.domain.repository.FirebaseAuthRepository
 import com.luci.aeris.presentation.viewmodel.ThemeViewModel
-import com.luci.aeris.utils.AppNavGraph
-import com.luci.aeris.utils.Navigator
+import com.luci.aeris.utils.navigator.AppNavGraph
+import com.luci.aeris.utils.navigator.Navigator
 
 
 @Composable

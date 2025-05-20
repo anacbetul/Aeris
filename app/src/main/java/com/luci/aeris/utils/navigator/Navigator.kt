@@ -1,4 +1,4 @@
-package com.luci.aeris.utils
+package com.luci.aeris.utils.navigator
 
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions

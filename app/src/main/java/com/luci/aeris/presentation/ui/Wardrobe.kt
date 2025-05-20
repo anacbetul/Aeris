@@ -1,10 +1,9 @@
-package com.luci.aeris.screens
+package com.luci.aeris.presentation.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +24,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.luci.aeris.R
-import com.luci.aeris.utils.Navigator
+import com.luci.aeris.utils.navigator.Navigator
 
 
 val categories: Map<Int, String> by lazy {

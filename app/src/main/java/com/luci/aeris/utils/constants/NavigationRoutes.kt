@@ -1,4 +1,4 @@
-package com.luci.aeris.constants
+package com.luci.aeris.utils.constants
 
 
 

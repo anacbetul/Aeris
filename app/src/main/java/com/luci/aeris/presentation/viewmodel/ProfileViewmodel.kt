@@ -1,4 +1,4 @@
-package com.luci.aeris.viewmodel
+package com.luci.aeris.presentation.viewmodel
 
 import android.app.Application
 import android.util.Log
@@ -7,12 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.luci.aeris.constants.NavigationRoutes
+import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.domain.model.User
 import com.luci.aeris.domain.repository.FirebaseAuthRepository
 import com.luci.aeris.domain.repository.FirestoreUserRepository
-import com.luci.aeris.utils.Navigator
-import com.yourapp.utils.SharedPrefRepository
+import com.luci.aeris.utils.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.launch

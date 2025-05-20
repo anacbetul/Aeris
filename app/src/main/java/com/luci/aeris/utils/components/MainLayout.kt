@@ -4,8 +4,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.luci.aeris.screens.AppBar
-import com.luci.aeris.utils.Navigator
+import com.luci.aeris.utils.components.AppBar
+import com.luci.aeris.utils.navigator.Navigator
 
 @Composable
 fun MainLayout(

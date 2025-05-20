@@ -1,4 +1,4 @@
-package com.luci.aeris.utils
+package com.luci.aeris.utils.navigator
 
 import AuthLayout
 import MainLayout
@@ -8,12 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.luci.aeris.constants.NavigationRoutes
+import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.domain.repository.FirebaseAuthState
+import com.luci.aeris.presentation.ui.ChooseOutfitScreen
+import com.luci.aeris.presentation.ui.Wardrobe
 import com.luci.aeris.presentation.viewmodel.ThemeViewModel
-import com.luci.aeris.screens.LoginScreen
-import com.luci.aeris.screens.RegisterScreen
-import com.luci.aeris.screens.*
+import com.luci.aeris.presentation.ui.LoginScreen
+import com.luci.aeris.presentation.ui.MainScreen
+import com.luci.aeris.presentation.ui.Profile
+import com.luci.aeris.presentation.ui.RegisterScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -60,7 +63,7 @@ fun AppNavGraph(
         }
         composable(NavigationRoutes.Profile) {
             MainLayout(navHostController, navigator) {
-                Profile(navigator = navigator, themeViewModel=themeViewModel)
+                Profile(navigator = navigator, themeViewModel = themeViewModel)
             }
         }
     }

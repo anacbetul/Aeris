@@ -1,4 +1,4 @@
-package com.luci.aeris.screens
+package com.luci.aeris.presentation.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -27,10 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luci.aeris.R
-import com.luci.aeris.utils.Navigator
+import com.luci.aeris.utils.navigator.Navigator
 
 @Composable
 fun ChooseOutfitScreen(navigator: Navigator) {

@@ -1,4 +1,4 @@
-package com.luci.aeris.viewmodel
+package com.luci.aeris.presentation.viewmodel
 
 import android.util.Patterns
 import androidx.compose.runtime.*
@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.luci.aeris.constants.StringConstants
+import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.domain.model.User
 import com.luci.aeris.domain.model.UserCredentials
 import com.luci.aeris.domain.repository.FirebaseAuthRepository

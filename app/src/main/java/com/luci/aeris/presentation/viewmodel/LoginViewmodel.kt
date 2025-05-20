@@ -1,4 +1,4 @@
-package com.luci.aeris.viewmodel
+package com.luci.aeris.presentation.viewmodel
 
 import android.util.Patterns
 import androidx.compose.runtime.getValue
@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.luci.aeris.constants.StringConstants
+import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.domain.model.User
 import com.luci.aeris.domain.model.UserCredentials
 import com.luci.aeris.domain.repository.FirebaseAuthRepository
@@ -31,7 +31,7 @@ class LoginViewModel (
     // Email ve password doğrulama fonksiyonu
     fun isFormValid(): Boolean {
         // Email validasyonu
-        emailError = email.value.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email.value).matches()
+        emailError = email.value.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email.value).matches()
 
         // Password validasyonu
         passwordError = password.value.isEmpty() || password.value.length < 6
@@ -51,7 +51,7 @@ class LoginViewModel (
         passwordError = password.value.length < 6
     }
      fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
      fun isValidPassword(password: String): Boolean {

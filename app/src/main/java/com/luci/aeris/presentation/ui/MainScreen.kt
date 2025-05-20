@@ -1,4 +1,4 @@
-package com.luci.aeris.screens
+package com.luci.aeris.presentation.ui
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -21,8 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.luci.aeris.presentation.ui.WeatherScreen
-import com.luci.aeris.utils.Navigator
+import com.luci.aeris.utils.navigator.Navigator
 
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
