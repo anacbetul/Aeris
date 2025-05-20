@@ -49,6 +49,13 @@ class StringConstants {
         const val confirmExit="Are you sure you want to sign out of your account?"
         const val signOut="Sign Out"
         const val stayInApp="Stay Logged In"
+        const val profileViewmodel="ProfileViewModel"
+        const val didnotFoundUserData="User data did not found!"
+        const val confirmDeleteAccount = "You are about to delete your account. This action cannot be undone. Do you want to continue?"
+        const val deleteTitle = "Delete Account"
+        const val deleteConfirm = "Yes, delete"
+        const val deleteCancel = "Cancel"
+
 
     }
 }

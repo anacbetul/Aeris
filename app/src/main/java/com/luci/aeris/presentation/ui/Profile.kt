@@ -26,6 +26,7 @@ import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.presentation.viewmodel.ThemeViewModel
 import com.luci.aeris.utils.navigator.Navigator
 import com.luci.aeris.presentation.viewmodel.ProfileViewModel
+import com.luci.aeris.utils.components.AirisAlertDialog
 
 @Composable
 fun Profile(
@@ -39,7 +40,8 @@ fun Profile(
     val user = viewModel.user
     val isLoading = viewModel.isLoading
     val scope = rememberCoroutineScope()
-    var showLogoutDialog by remember { mutableStateOf(false) } // <- Dialog için state
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Kullanıcıyı ilk kez yükle
     LaunchedEffect(Unit) {
@@ -179,38 +181,39 @@ fun Profile(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            TextButton(onClick = { /* hesap silme işlemi */ }) {
+            TextButton(onClick = {
+
+                showDeleteDialog = true
+            }) {
                 BodyText(StringConstants.deleteAccount, fontSize = 12.sp, textColor = MaterialTheme.colorScheme.error)
             }
         }
     }
 
-    // ✅ ÇIKIŞ DİALOGU
     if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = { BodyText(StringConstants.exit, fontSize = 20.sp , fontWeight = FontWeight.W700 ) },
-            text = { BodyText(StringConstants.confirmExit) },
-
-            dismissButton = {
-                TextButton(onClick = {
-                    showLogoutDialog = false
-                    viewModel.onSignOut(navigator)
-                }) {
-                    BodyText(StringConstants.signOut, fontSize = 12.sp,textColor=MaterialTheme.colorScheme.error)
-                }
+        AirisAlertDialog (
+            title = StringConstants.exit,
+            message = StringConstants.confirmExit,
+            confirmText = StringConstants.signOut,
+            dismissText = StringConstants.stayInApp,
+            onConfirm = {
+                showLogoutDialog = false
+                viewModel.onSignOut(navigator)
             },
-                    confirmButton = {
-                TextButton(
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray.copy(alpha = 0.3f)),
-                    onClick = {
-                        showLogoutDialog = false
-
-                    }
-                ) {
-                    BodyText(StringConstants.stayInApp, fontSize = 12.sp)
-                }
+            onDismiss = { showLogoutDialog = false }
+        )
+    }
+    if (showDeleteDialog) {
+        AirisAlertDialog(
+            title = StringConstants.deleteTitle,
+            message = StringConstants.confirmDeleteAccount,
+            confirmText = StringConstants.deleteConfirm,
+            dismissText = StringConstants.deleteCancel,
+            onConfirm = {
+                showDeleteDialog = false
+                viewModel.deleteAccount(navigator)
             },
+            onDismiss = { showDeleteDialog = false }
         )
     }
 }

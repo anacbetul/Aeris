@@ -11,6 +11,7 @@ import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.domain.model.User
 import com.luci.aeris.domain.repository.FirebaseAuthRepository
 import com.luci.aeris.domain.repository.FirestoreUserRepository
+import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.utils.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -37,7 +38,7 @@ class ProfileViewModel @Inject constructor(
                     user = userData
                 }
                 .onFailure {
-                    Log.e("ProfileViewModel", "Kullanıcı verisi alınamadı: ${it.message}")
+                    Log.e(StringConstants.profileViewmodel, "${StringConstants.didnotFoundUserData} ${it.message}")
                 }
             isLoading = false
         }
@@ -47,6 +48,33 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.signOut()
             navigator.navigateAndClearBackStack(NavigationRoutes.Login)
+        }
+    }
+
+    fun deleteAccount(navigator: Navigator) {
+        viewModelScope.launch {
+            val currentUser = authRepository.currentUser
+            val uid = currentUser?.uid ?: return@launch
+
+            try {
+                // 1. Firestore'dan sil
+                firestoreUserRepository.deleteUser(uid).onFailure {
+                    Log.e("DeleteAccount", "Firestore'dan silinemedi: ${it.message}")
+                    return@launch
+                }
+
+                // 2. Firebase Auth'tan sil
+                currentUser.delete().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("DeleteAccount", "Kullanıcı başarıyla silindi")
+                        navigator.navigateAndClearBackStack(NavigationRoutes.Login)
+                    } else {
+                        Log.e("DeleteAccount", "Firebase Auth'tan silme başarısız: ${task.exception?.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("DeleteAccount", "Hesap silinirken hata oluştu: ${e.message}")
+            }
         }
     }
 }
