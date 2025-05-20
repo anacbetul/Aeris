@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.sp
 fun BodyText(
     text: String,
     modifier: Modifier = Modifier,
-    textColor: Color = Color.Black,
+    textColor: Color = MaterialTheme.colorScheme.onBackground,
     textAlign: TextAlign = TextAlign.Start,
     fontSize: TextUnit = 16.sp,
     fontWeight: FontWeight = FontWeight.Normal,

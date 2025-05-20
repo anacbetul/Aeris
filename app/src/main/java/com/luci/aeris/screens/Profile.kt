@@ -19,24 +19,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.luci.aeris.constants.StringConstants
+import com.luci.aeris.presentation.viewmodel.ThemeViewModel
 import com.luci.aeris.utils.Navigator
 import com.luci.aeris.viewmodel.ProfileViewModel
-import kotlinx.coroutines.launch
 
 @Composable
 fun Profile(
     navigator: Navigator,
-    viewModel: ProfileViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
+            themeViewModel: ThemeViewModel
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val isDarkMode = remember { mutableStateOf(false) }
+    val isDarkMode by themeViewModel.isDarkTheme.collectAsState()
     var selectedGender by remember { mutableStateOf("") }
     val user = viewModel.user
     val isLoading = viewModel.isLoading
     val scope = rememberCoroutineScope()
+    var showLogoutDialog by remember { mutableStateOf(false) } // <- Dialog için state
 
     // Kullanıcıyı ilk kez yükle
     LaunchedEffect(Unit) {
@@ -119,7 +123,8 @@ fun Profile(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     OutlinedTextField(
-                        value = if(user?.password== StringConstants.emptyString) StringConstants.loggedGoogle else StringConstants.star,
+                        value = if (user?.password == StringConstants.emptyString)
+                            StringConstants.loggedGoogle else StringConstants.star,
                         onValueChange = {},
                         label = { BodyText(StringConstants.password) },
                         readOnly = true,
@@ -155,7 +160,9 @@ fun Profile(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 BodyText(StringConstants.darkMode)
-                Switch(checked = isDarkMode.value, onCheckedChange = { isDarkMode.value = it })
+                Switch(checked = isDarkMode,  onCheckedChange = {
+                    themeViewModel.toggleTheme()
+                })
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
@@ -165,7 +172,7 @@ fun Profile(
 
         Row(modifier = Modifier.align(Alignment.End)) {
             Button(
-                onClick = { viewModel.onSignOut(navigator) },
+                onClick = { showLogoutDialog = true }, // <-- dialog göster
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {
                 BodyText(StringConstants.exit, textColor = MaterialTheme.colorScheme.onPrimary)
@@ -174,12 +181,40 @@ fun Profile(
             Spacer(modifier = Modifier.width(8.dp))
 
             TextButton(onClick = { /* hesap silme işlemi */ }) {
-                BodyText(StringConstants.deleteAccount, fontSize = 12.sp, textColor = Color.Red)
+                BodyText(StringConstants.deleteAccount, fontSize = 12.sp, textColor = MaterialTheme.colorScheme.error)
             }
         }
     }
-}
 
+    // ✅ ÇIKIŞ DİALOGU
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { BodyText(StringConstants.exit, fontSize = 20.sp , fontWeight = FontWeight.W700 ) },
+            text = { BodyText(StringConstants.confirmExit) },
+
+            dismissButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    viewModel.onSignOut(navigator)
+                }) {
+                    BodyText(StringConstants.signOut, fontSize = 12.sp,textColor=MaterialTheme.colorScheme.error)
+                }
+            },
+                    confirmButton = {
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray.copy(alpha = 0.3f)),
+                    onClick = {
+                        showLogoutDialog = false
+
+                    }
+                ) {
+                    BodyText(StringConstants.stayInApp, fontSize = 12.sp)
+                }
+            },
+        )
+    }
+}
 
 
 
