@@ -43,6 +43,7 @@ class WeatherViewModel @Inject constructor(
             val weatherList = response.days.mapNotNull { it?.toWeather(resolvedAddress) }.toMutableList()
 
             current?.let {
+                weatherList.removeAt(0)
                 weatherList.add(0, it.toWeather())
             }
             _weatherState.value = weatherList
