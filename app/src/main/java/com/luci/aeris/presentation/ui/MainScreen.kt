@@ -17,10 +17,19 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.luci.aeris.presentation.viewmodel.WeatherViewModel
 import com.luci.aeris.utils.navigator.Navigator
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -28,49 +37,51 @@ import com.luci.aeris.utils.navigator.Navigator
 
 @Composable
 fun MainScreen(navigator: Navigator) {
-    val configuration = LocalConfiguration.current
+    val viewModel: WeatherViewModel = hiltViewModel()
+    val isRefreshing by viewModel.isLoading.collectAsState()
 
-    val screenWidth = configuration.screenWidthDp.dp
-    val screenHeight = configuration.screenHeightDp.dp
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isRefreshing)
 
-
-    Column(
-    //    modifier = Modifier.padding(8.dp).fillMaxSize()
+    SwipeRefresh(
+        state = swipeRefreshState,
+        onRefresh = {
+            viewModel.loadWeather()
+        },
+        modifier = Modifier
+            .fillMaxSize()
     ) {
-        WeatherScreen(viewModel = hiltViewModel())
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            contentPadding = PaddingValues(8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        Column(
+            //    modifier = Modifier.padding(8.dp).fillMaxSize()
         ) {
-            items(6) { index ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f),
-                    elevation = CardDefaults.cardElevation(4.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                ) {
-//                            Box(
-//                                modifier = Modifier.fillMaxSize(),
-//                            ) {
-//
-//                            }
-                    Text(
-                        text = "Item ",
-                        modifier = Modifier.padding(16.dp)
-                    )
+            WeatherScreen(viewModel = viewModel)
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(6) { index ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    ) {
+                        Text(
+                            text = "Item ",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
             }
         }
+
+
     }
-    //}
-
 }
-
 

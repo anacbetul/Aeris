@@ -1,7 +1,10 @@
 package com.luci.aeris.presentation.ui
 
 import BodyText
+import android.content.Context
+import android.net.Uri
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,11 +25,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -37,6 +38,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.ImageLoader
+import coil.compose.rememberAsyncImagePainter
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
 import com.luci.aeris.R
 import com.luci.aeris.presentation.viewmodel.WeatherViewModel
 import java.time.LocalDate
@@ -49,6 +55,16 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
     val weatherList by viewModel.weatherState.collectAsState()
     val selectedWeather by viewModel.selectedDay.collectAsState()
     val currentWeather by viewModel.currentWeather.collectAsState()
+
+    val context = LocalContext.current
+    val gifEnabledLoader = ImageLoader.Builder(context = context)
+        .components {
+            if (SDK_INT >= 28) {
+                add(ImageDecoderDecoder.Factory())
+            } else {
+                add(GifDecoder.Factory())
+            }
+        }.build()
 
     if (weatherList.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -101,14 +117,27 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                 BodyText(
                     text = "${weather.temp.toInt()}°C",
                     fontSize = 64.sp,
-                    textColor = Color.White
                 )
-                WeatherIcon(weather.icon)
+                //WeatherIcon(weather.icon)
+
+                val gifUri = getWeatherIconUri(weather.icon, context)
+
+                val painter = rememberAsyncImagePainter(
+                    model = ImageRequest.Builder(context)
+                        .data(gifUri)
+                        .build(),
+                    imageLoader = gifEnabledLoader
+                )
+                Image(
+                    modifier = Modifier.size(150.dp),
+                    painter = painter,
+                    contentDescription = null,)
+
+
             }
             BodyText(weather.resolvedAddress)
             Spacer(modifier = Modifier.size(24.dp))
             if (weather == weatherList.first()) {
-
                 BodyText("Feels like ${weather.feelslike.toInt()}°")
                 BodyText(formatTime(weather.datetime), fontSize = 12.sp)
             } else {
@@ -120,6 +149,7 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
     }
 }
 
+
 @Composable
 fun FrostedGlassCard(content: @Composable ColumnScope.() -> Unit) {
     Box(
@@ -129,15 +159,12 @@ fun FrostedGlassCard(content: @Composable ColumnScope.() -> Unit) {
             .clip(RoundedCornerShape(24.dp))
         //.background(MaterialTheme.colorScheme.primary) // dışarıdan transparan
     ) {
-        // Arka plan: sadece bu blur olacak
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
-                .blur(20.dp) // sadece bu kutuya blur
+                .background(Color.White.copy(alpha = 0.5f))
+                .blur(20.dp)
         )
-
-        // Ön plan: yazılar ve içerik blur'suz
         Column(
             modifier = Modifier
                 .padding(16.dp),
@@ -183,6 +210,35 @@ fun WeatherIcon(iconName: String) {
 
 }
 
+fun getWeatherIconUri(iconName: String, context: Context): Uri {
+    val resourceId = when (iconName) {
+        "clear-day" -> R.raw.sun_17102813
+        "clear-night" -> R.raw.night_17102940
+        "cloudy" -> R.raw.clouds_17102874
+        "fog" -> R.raw.foggy_17102868
+        "hail" -> R.raw.hailstones_17102992
+        "partly-cloudy-day" -> R.raw.partly_cloudy_17102931
+        "partly-cloudy-night" -> R.raw.cloudy_night_17102854
+        "rain" -> R.raw.rain_17102963
+        "rain-snow" -> R.raw.hail_17858185
+        "rain-snow-showers-day" -> R.raw.hail_17858185
+        "rain-snow-showers-night" -> R.raw.hail_17858185
+        "showers-day" -> R.raw.showers_day_17103009
+        "showers-night" -> R.raw.rain_17102963
+        "sleet" -> R.raw.sleet_17103071
+        "snow" -> R.raw.snow_19003498
+        "snow-showers-day" -> R.raw.snow_17103041
+        "snow-showers-night" -> R.raw.snow_17103041
+        "thunder" -> R.raw.storm_17102956
+        "thunder-rain" -> R.raw.storm_18821397
+        "thunder-showers-day" -> R.raw.storm_18998623
+        "thunder-showers-night" -> R.raw.storm_18821397
+        "wind" -> R.raw.wind_17102829
+        else -> R.raw.sun_17102813
+    }
+
+    return Uri.parse("android.resource://${context.packageName}/$resourceId")
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun formatDay(apiDate: String): String {

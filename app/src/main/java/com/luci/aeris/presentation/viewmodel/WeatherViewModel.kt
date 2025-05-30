@@ -29,12 +29,20 @@ class WeatherViewModel @Inject constructor(
     private val _currentWeather = MutableStateFlow<CurrentConditions?>(null)
     val currentWeather: StateFlow<CurrentConditions?> = _currentWeather
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+
     fun selectDay(weather: Weather) {
         _selectedDay.value = weather
     }
 
-    init {
+    init{
+        loadWeather()
+    }
+    fun loadWeather() {
         viewModelScope.launch {
+            _isLoading.value = true
             val response = repository.getWeatherResponse()
 
             val resolvedAddress = response.resolvedAddress ?: ""
@@ -48,8 +56,7 @@ class WeatherViewModel @Inject constructor(
             }
             _weatherState.value = weatherList
             _selectedDay.value = weatherList.firstOrNull()
-
-
+            _isLoading.value = false
         }
     }
 
