@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.luci.aeris.presentation.ui.createImageUri
+import com.luci.aeris.utils.constants.StringConstants
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -73,13 +74,13 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
     fun saveClothes(onResult: (Boolean, String?) -> Unit) {
         val photoUri = _selectedImageUri.value
         if (photoUri == null) {
-            onResult(false, "Fotoğraf seçilmedi")
+            onResult(false, StringConstants.photoNotSelected)
             return
         }
 
         val userId = auth.currentUser?.uid
         if (userId == null) {
-            onResult(false, "Kullanıcı oturumu bulunamadı")
+            onResult(false, StringConstants.userSessionNotFound)
             return
         }
 
@@ -88,14 +89,14 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
                 val newClothes = Clothes(
                     id = UUID.randomUUID().toString(),
                     photoPath = photoUri.toString(),
-                    dateAdded = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(Date()),
+                    dateAdded = SimpleDateFormat(StringConstants.dateFormat, Locale.getDefault()).format(Date()),
                     type = "Hats",
                     suitableWeather = listOf("Soğuk", "Rüzgarlı")
                 )
 
-                firestore.collection("users")
+                firestore.collection(StringConstants.users)
                     .document(userId)
-                    .collection("clothes")
+                    .collection(StringConstants.clothes)
                     .document(newClothes.id)
                     .set(newClothes)
                     .await()

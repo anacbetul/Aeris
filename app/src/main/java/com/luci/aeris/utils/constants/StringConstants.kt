@@ -69,6 +69,10 @@ class StringConstants {
         const val save="Submit"
         const val selectGallery="Select from Gallery"
         const val takePhoto="Take Photo"
+        const val photoNotSelected="Photo not selected"
+        const val userSessionNotFound="User session could not be found"
+        const val users="users"
+        const val clothes="clothes"
 
 
 
