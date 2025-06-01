@@ -1,11 +1,13 @@
 package com.luci.aeris.domain.repository
 
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.luci.aeris.domain.model.User
 import kotlinx.coroutines.tasks.await
 
 class FirestoreUserRepository(
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) {
 
     private val usersCollection = firestore.collection("users")
@@ -47,5 +49,8 @@ class FirestoreUserRepository(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+    fun getUserId(): String? {
+        return auth.currentUser?.uid
     }
 }

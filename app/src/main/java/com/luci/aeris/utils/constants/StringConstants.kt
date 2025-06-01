@@ -55,6 +55,21 @@ class StringConstants {
         const val deleteTitle = "Delete Account"
         const val deleteConfirm = "Yes, delete"
         const val deleteCancel = "Cancel"
+        const val dateFormat="dd MMMM yyyy"
+        const val error="ERROR"
+        const val pickedImage="A Picked Image"
+        const val pickImage="Pick a Image"
+        const val addAPhoto="Add a Photo"
+        const val clotheDetail="Clothing Details"
+        const val adddeOn= "Added On:"
+        const val category="Category"
+        const val suitableCondition="Suitable Weather Conditions:"
+        const val clothesSuccesfly="Clothes saved successfully."
+        const val success= "SUCCESS"
+        const val save="Submit"
+        const val selectGallery="Select from Gallery"
+        const val takePhoto="Take Photo"
+
 
 
     }

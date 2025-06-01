@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.domain.repository.FirebaseAuthState
+import com.luci.aeris.presentation.ui.AddClothes
 import com.luci.aeris.presentation.ui.ChooseOutfitScreen
 import com.luci.aeris.presentation.ui.Wardrobe
 import com.luci.aeris.presentation.viewmodel.ThemeViewModel
@@ -17,6 +18,7 @@ import com.luci.aeris.presentation.ui.LoginScreen
 import com.luci.aeris.presentation.ui.MainScreen
 import com.luci.aeris.presentation.ui.Profile
 import com.luci.aeris.presentation.ui.RegisterScreen
+import com.luci.aeris.utils.constants.NavigationRoutes.AddClothes
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -54,6 +56,11 @@ fun AppNavGraph(
         composable(NavigationRoutes.ChooseOutfit) {
             MainLayout(navHostController, navigator) {
                 ChooseOutfitScreen(navigator = navigator)
+            }
+        }
+        composable(NavigationRoutes.AddClothes) {
+            MainLayout(navHostController, navigator) {
+                AddClothes(navigator = navigator)
             }
         }
         composable(NavigationRoutes.Wardrobe) {

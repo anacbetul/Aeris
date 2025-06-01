@@ -24,9 +24,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeViewModel: ThemeViewModel = hiltViewModel()
             val isDark by themeViewModel.isDarkTheme.collectAsState()
-            SideEffect {
-                println("Dark mode is now: $isDark") // ya da Log.d()
-            }
+
             AerisTheme(darkTheme = isDark) {
                 val navController = rememberNavController()
                 val navigator = remember { Navigator(navController) }
