@@ -29,6 +29,8 @@ import java.util.*
 class AddClothesViewModel(application: Application) : AndroidViewModel(application) {
 
     private val context = getApplication<Application>().applicationContext
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _selectedImageUri = MutableStateFlow<Uri?>(null)
     val selectedImageUri: StateFlow<Uri?> = _selectedImageUri
@@ -87,33 +89,32 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
 
     fun setSelectedImage(uri: Uri) {
         viewModelScope.launch {
+            _isLoading.value = true // Yükleme başladı
             _selectedImageUri.value = uri
 
-            // Uri -> File dönüşümü
             val imageFile = uriToFile(uri) ?: run {
                 _backgroundRemovedBitmap.value = null
                 _backgroundRemovedUri.value = null
+                _isLoading.value = false
                 return@launch
             }
 
-            // Remove.bg API ile arka planı kaldır
             val bgRemovedUri = removeBackgroundRepository.removeBackground(imageFile)
             _backgroundRemovedUri.value = bgRemovedUri ?: uri
 
-            // Görüntüyü bitmap olarak yükle
             val bitmap = bgRemovedUri?.let { uriToBitmap(it) } ?: uriToBitmap(uri)
             _backgroundRemovedBitmap.value = bitmap ?: return@launch
 
-            // ML Model ile giysi tipini tahmin et
             val predictedLabel = modelRepository.predict(bitmap)
             _detectedType.value = predictedLabel
 
-            // Tahmine bağlı olarak uygun hava koşullarını hesapla (örnek)
             _suitableConditions.value = when (predictedLabel.lowercase()) {
                 "mont", "ceket" -> listOf("Soğuk", "Rüzgarlı")
                 "tişört" -> listOf("Sıcak", "Ilık")
                 else -> emptyList()
             }
+
+            _isLoading.value = false // Yükleme tamamlandı
         }
     }
 

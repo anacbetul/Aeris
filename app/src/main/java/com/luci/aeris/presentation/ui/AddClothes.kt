@@ -43,7 +43,7 @@ fun AddClothes(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    var showBottomSheet by remember { mutableStateOf(false) }
+    val isLoading by viewModel.isLoading.collectAsState()
     val selectedImageUri by viewModel.selectedImageUri.collectAsState()
     val backgroundRemovedBitmap by viewModel.backgroundRemovedBitmap.collectAsState()
     val hasCameraPermission by viewModel.hasCameraPermission.collectAsState()
@@ -51,7 +51,9 @@ fun AddClothes(
     val detectedType by viewModel.detectedType.collectAsState()
     val suitableConditions by viewModel.suitableConditions.collectAsState()
     val colorscheme = MaterialTheme.colorScheme
+
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     val currentDate = remember {
         java.text.SimpleDateFormat(StringConstants.dateFormat, java.util.Locale.getDefault()).format(java.util.Date())
@@ -113,201 +115,221 @@ fun AddClothes(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(240.dp)
-                    .clickable { showBottomSheet = true },
-                contentAlignment = Alignment.Center
-            ) {
-                when {
-                    backgroundRemovedBitmap != null -> {
-                        Image(
-                            bitmap = backgroundRemovedBitmap!!.asImageBitmap(),
-                            contentDescription = StringConstants.pickedImage,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Transparent)
-                                .clip(RoundedCornerShape(20.dp)),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                    selectedImageUri != null -> {
-                        Image(
-                            painter = rememberAsyncImagePainter(selectedImageUri),
-                            contentDescription = StringConstants.pickedImage,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Transparent)
-                                .clip(RoundedCornerShape(20.dp)),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                    else -> {
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = Color.Gray.copy(alpha = 0.4f),
-                            tonalElevation = 2.dp,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AddAPhoto,
-                                    contentDescription = StringConstants.addAPhoto,
-                                    tint = colorscheme.onSurfaceVariant,
-                                    modifier = Modifier.size(40.dp)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                BodyText(text = StringConstants.addAPhoto)
-                            }
-                        }
-                    }
-                }
-            }
+
+        Box(modifier = Modifier.fillMaxSize()) {
 
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                if (detectedType != null) {
-                    BodyText(
-                        text = StringConstants.clotheDetail,
-                        fontWeight = FontWeight.W700
-                    )
-                    Divider()
-                    Text(text = "${StringConstants.adddeOn} $currentDate")
-                    Text(text = "${StringConstants.category}: $detectedType")
-                }
-                if (suitableConditions.isNotEmpty()) {
-                    Text(text = "${StringConstants.suitableCondition} ${suitableConditions.joinToString()}")
-                }
-            }
 
-            if (selectedImageUri != null && detectedType != null) {
+                Box(
+                    modifier = Modifier
+                        .size(240.dp)
+                        .clickable { showBottomSheet = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    when {
+                        backgroundRemovedBitmap != null -> {
+                            Image(
+                                bitmap = backgroundRemovedBitmap!!.asImageBitmap(),
+                                contentDescription = StringConstants.pickedImage,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Transparent)
+                                    .clip(RoundedCornerShape(20.dp)),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                        selectedImageUri != null -> {
+                            Image(
+                                painter = rememberAsyncImagePainter(selectedImageUri),
+                                contentDescription = StringConstants.pickedImage,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Transparent)
+                                    .clip(RoundedCornerShape(20.dp)),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                        else -> {
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color.Gray.copy(alpha = 0.4f),
+                                tonalElevation = 2.dp,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AddAPhoto,
+                                        contentDescription = StringConstants.addAPhoto,
+                                        tint = colorscheme.onSurfaceVariant,
+                                        modifier = Modifier.size(40.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    BodyText(text = StringConstants.addAPhoto)
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                        .padding(horizontal = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                    if (detectedType != null) {
+                        BodyText(
+                            text = StringConstants.clotheDetail,
+                            fontWeight = FontWeight.W700
+                        )
+                        Divider()
+                        Text(text = "${StringConstants.adddeOn} $currentDate")
+                        Text(text = "${StringConstants.category}: $detectedType")
+                    }
+                    if (suitableConditions.isNotEmpty()) {
+                        Text(text = "${StringConstants.suitableCondition} ${suitableConditions.joinToString()}")
+                    }
+                }
+
+                if (selectedImageUri != null && detectedType != null) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutlinedButton(
-                            onClick = {
-                                viewModel.saveClothes { success, errorMessage ->
-                                    coroutineScope.launch {
-                                        if (success) {
-                                            snackbarHostState.showSnackbar(
-                                                message = StringConstants.clothesSuccesfly,
-                                                actionLabel = StringConstants.success,
-                                                duration = SnackbarDuration.Short
-                                            )
-                                            viewModel.clearSelection()
-                                        } else {
-                                            snackbarHostState.showSnackbar(
-                                                message = "Hata: $errorMessage",
-                                                actionLabel = StringConstants.error,
-                                                duration = SnackbarDuration.Short
-                                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    viewModel.saveClothes { success, errorMessage ->
+                                        coroutineScope.launch {
+                                            if (success) {
+                                                snackbarHostState.showSnackbar(
+                                                    message = StringConstants.clothesSuccesfly,
+                                                    actionLabel = StringConstants.success,
+                                                    duration = SnackbarDuration.Short
+                                                )
+                                                viewModel.clearSelection()
+                                            } else {
+                                                snackbarHostState.showSnackbar(
+                                                    message = "Hata: $errorMessage",
+                                                    actionLabel = StringConstants.error,
+                                                    duration = SnackbarDuration.Short
+                                                )
+                                            }
                                         }
                                     }
                                 }
+                            ) {
+                                BodyText(StringConstants.save)
                             }
-                        ) {
-                            BodyText(StringConstants.save)
-                        }
 
-                        OutlinedButton(
-                            onClick = {
-                                viewModel.clearSelection()
+                            OutlinedButton(
+                                onClick = {
+                                    viewModel.clearSelection()
+                                }
+                            ) {
+                                BodyText(StringConstants.deleteCancel)
                             }
+                        }
+                    }
+                }
+
+                if (showBottomSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showBottomSheet = false },
+                        sheetState = sheetState,
+                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                        containerColor = colorscheme.surface
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            BodyText(StringConstants.deleteCancel)
+                            BodyText(text = StringConstants.pickImage, fontWeight = FontWeight.W700)
+
+                            OutlinedButton(
+                                onClick = {
+                                    if (hasGalleryPermission) {
+                                        pickImageLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                    } else {
+                                        galleryPermissionLauncher.launch(
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                                Manifest.permission.READ_MEDIA_IMAGES
+                                            else
+                                                Manifest.permission.READ_EXTERNAL_STORAGE
+                                        )
+                                    }
+                                    showBottomSheet = false
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, Modifier.size(20.dp), tint = Color.Gray)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                BodyText(StringConstants.selectGallery)
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    if (hasCameraPermission) {
+                                        val uri = createImageUri(context)
+                                        viewModel.setCameraImageUri(uri)
+                                        takePictureLauncher.launch(uri)
+                                    } else {
+                                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                    }
+                                    showBottomSheet = false
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Default.CameraAlt, contentDescription = null, Modifier.size(20.dp), tint = Color.Gray)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                BodyText(StringConstants.takePhoto)
+                            }
                         }
                     }
                 }
             }
 
-            if (showBottomSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = { showBottomSheet = false },
-                    sheetState = sheetState,
-                    shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                    containerColor = colorscheme.surface
+            // ✅ Tam ekran Loading göstergesi
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.4f)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        BodyText(text = StringConstants.pickImage, fontWeight = FontWeight.W700)
-
-                        OutlinedButton(
-                            onClick = {
-                                if (hasGalleryPermission) {
-                                    pickImageLauncher.launch(
-                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                    )
-                                } else {
-                                    galleryPermissionLauncher.launch(
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                                            Manifest.permission.READ_MEDIA_IMAGES
-                                        else
-                                            Manifest.permission.READ_EXTERNAL_STORAGE
-                                    )
-                                }
-                                showBottomSheet = false
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(Icons.Default.PhotoLibrary, contentDescription = null, Modifier.size(20.dp), tint = Color.Gray)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            BodyText(StringConstants.selectGallery)
-                        }
-
-                        OutlinedButton(
-                            onClick = {
-                                if (hasCameraPermission) {
-                                    val uri = createImageUri(context)
-                                    viewModel.setCameraImageUri(uri)
-                                    takePictureLauncher.launch(uri)
-                                } else {
-                                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                                }
-                                showBottomSheet = false
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(Icons.Default.CameraAlt, contentDescription = null, Modifier.size(20.dp), tint = Color.Gray)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            BodyText(StringConstants.takePhoto)
-                        }
-                    }
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 4.dp
+                    )
                 }
             }
         }
     }
 }
 
-// Bu fonksiyon ayrı bir util dosyasına taşınabilir
+// Ayrı bir utils dosyasına alınabilir
 fun createImageUri(context: android.content.Context): Uri {
     val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
     val file = java.io.File(context.cacheDir, "IMG_$timestamp.jpg")
