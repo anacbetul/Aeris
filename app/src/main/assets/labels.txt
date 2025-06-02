@@ -1,0 +1,21 @@
+Caps
+Casual Shoes
+Coat
+Denimcoat
+Dress
+Formal Shoes
+Heels
+Hoodie
+Jacket
+Pant
+Raincoat
+Sandals
+Shirt
+Short
+Skirt
+Sports Shoes
+Sunglasses
+Sweter
+T-shirt
+Tracksuit
+Winter Beret

@@ -46,7 +46,9 @@ fun AddClothes(
     val selectedImageUri by viewModel.selectedImageUri.collectAsState()
     val hasCameraPermission by viewModel.hasCameraPermission.collectAsState()
     val hasGalleryPermission by viewModel.hasGalleryPermission.collectAsState()
-    val colorscheme= MaterialTheme.colorScheme
+    val detectedType by viewModel.detectedType.collectAsState()
+    val suitableConditions by viewModel.suitableConditions.collectAsState()
+    val colorscheme = MaterialTheme.colorScheme
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val currentDate = remember {
@@ -54,23 +56,17 @@ fun AddClothes(
     }
 
     // Launchers
-    val takePictureLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { success ->
+    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             viewModel.setSelectedImage(viewModel.cameraImageUri.value)
         }
     }
 
-    val pickImageLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
+    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let { viewModel.setSelectedImage(it) }
     }
 
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         viewModel.updateCameraPermission(granted)
         if (granted) {
             viewModel.cameraImageUri.value?.let {
@@ -83,9 +79,7 @@ fun AddClothes(
         }
     }
 
-    val galleryPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
+    val galleryPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         viewModel.updateGalleryPermission(granted)
         if (granted) {
             pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -164,9 +158,7 @@ fun AddClothes(
                                 modifier = Modifier.size(40.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            BodyText(
-                                text = StringConstants.addAPhoto,
-                            )
+                            BodyText(text = StringConstants.addAPhoto)
                         }
                     }
                 }
@@ -180,38 +172,68 @@ fun AddClothes(
             ) {
                 BodyText(
                     text = StringConstants.clotheDetail,
-                    fontWeight = FontWeight.W700,
+                    fontWeight = FontWeight.W700
                 )
                 Divider()
                 Text(text = "${StringConstants.adddeOn} $currentDate")
-                Text(text = "${StringConstants.category}: Mont")
-                Text(text = "${StringConstants.suitableCondition} Soğuk, Rüzgarlı")
+                if (detectedType != null) {
+                    Text(text = "${StringConstants.category}: $detectedType")
+                }
+                if (!suitableConditions.isNullOrEmpty()) {
+                    Text(text = "${StringConstants.suitableCondition} ${suitableConditions.joinToString()}")
+                }
             }
 
-            OutlinedButton (
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    viewModel.saveClothes { success, errorMessage ->
-                        coroutineScope.launch {
-                            if (success) {
-                                snackbarHostState.showSnackbar(
-                                    message = StringConstants.clothesSuccesfly,
-                                    actionLabel = StringConstants.success,
-                                    duration = SnackbarDuration.Short  // otomatik kaybolma 3 saniye civarı
-                                )
-                                //navigator.goBack()
-                            } else {
-                                snackbarHostState.showSnackbar(
-                                    message = "Hata: $errorMessage",
-                                    actionLabel = StringConstants.error,
-                                    duration = SnackbarDuration.Short
-                                )
+            if (selectedImageUri != null && detectedType != null) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Divider()
+                    BodyText(text = "Model Tahmini", fontWeight = FontWeight.W700)
+                    Text(text = "Tür: $detectedType")
+                    Text(text = "Koşullar: ${suitableConditions.joinToString()}")
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.saveClothes { success, errorMessage ->
+                                    coroutineScope.launch {
+                                        if (success) {
+                                            snackbarHostState.showSnackbar(
+                                                message = StringConstants.clothesSuccesfly,
+                                                actionLabel = StringConstants.success,
+                                                duration = SnackbarDuration.Short
+                                            )
+                                            viewModel.clearSelection()
+                                        } else {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Hata: $errorMessage",
+                                                actionLabel = StringConstants.error,
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    }
+                                }
                             }
+                        ) {
+                            BodyText("Kaydet")
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.clearSelection()
+                            }
+                        ) {
+                            BodyText("İptal Et")
                         }
                     }
                 }
-            ) {
-                BodyText(StringConstants.save)
             }
 
             if (showBottomSheet) {
@@ -219,7 +241,7 @@ fun AddClothes(
                     onDismissRequest = { showBottomSheet = false },
                     sheetState = sheetState,
                     shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                    containerColor =colorscheme.surface
+                    containerColor = colorscheme.surface
                 ) {
                     Column(
                         modifier = Modifier
@@ -227,11 +249,7 @@ fun AddClothes(
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        BodyText(
-                            text = StringConstants.pickImage,
-                            fontWeight = FontWeight.W700,
-
-                        )
+                        BodyText(text = StringConstants.pickImage, fontWeight = FontWeight.W700)
 
                         OutlinedButton(
                             onClick = {
@@ -252,11 +270,7 @@ fun AddClothes(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.PhotoLibrary,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Icon(Icons.Default.PhotoLibrary, null, Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             BodyText(StringConstants.selectGallery)
                         }
@@ -275,11 +289,7 @@ fun AddClothes(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.CameraAlt,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Icon(Icons.Default.CameraAlt, null, Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             BodyText(StringConstants.takePhoto)
                         }
@@ -289,6 +299,7 @@ fun AddClothes(
         }
     }
 }
+
 
 fun createImageUri(context: android.content.Context): Uri {
     val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())

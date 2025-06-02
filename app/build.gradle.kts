@@ -114,4 +114,5 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("io.coil-kt:coil-gif:2.6.0")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.30.1")
+    implementation ("org.tensorflow:tensorflow-lite:2.11.0")
 }
