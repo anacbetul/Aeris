@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,7 +26,6 @@ import kotlinx.coroutines.tasks.await
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-
 class AddClothesViewModel(application: Application) : AndroidViewModel(application) {
 
     private val context = getApplication<Application>().applicationContext
@@ -34,7 +34,8 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _selectedImageUri = MutableStateFlow<Uri?>(null)
     val selectedImageUri: StateFlow<Uri?> = _selectedImageUri
-
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving: StateFlow<Boolean> = _isSaving
     private val _cameraImageUri = MutableStateFlow<Uri?>(null)
     val cameraImageUri: StateFlow<Uri?> = _cameraImageUri
 
@@ -109,8 +110,12 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
             _detectedType.value = predictedLabel
 
             _suitableConditions.value = when (predictedLabel.lowercase()) {
-                "mont", "ceket" -> listOf("Soğuk", "Rüzgarlı")
-                "tişört" -> listOf("Sıcak", "Ilık")
+                "caps", "sunglasses", "t-shirt", "shirt", "short", "sandals" -> listOf("Hot", "Sunnt")
+                "hoodie", "sweter", "pant", "tracksuit" -> listOf("Warm", "Cool")
+                "coat", "denimcoat", "jacket", "raincoat" -> listOf("Cold", "Windy", "Rainy")
+                "winter beret" -> listOf("Cold", "Snowy")
+                "dress", "skirt", "heels" -> listOf("Warm", "Hot")
+                "formal shoes", "casual shoes", "sports shoes" -> listOf("All Conditionts", "Dry")
                 else -> emptyList()
             }
 
@@ -122,11 +127,12 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
         _cameraImageUri.value = uri
     }
 
+
     fun saveClothes(onResult: (Boolean, String?) -> Unit) {
         val photoUri = _backgroundRemovedUri.value ?: _selectedImageUri.value
         val type = _detectedType.value
         val conditions = _suitableConditions.value
-
+        print(conditions)
         if (photoUri == null) {
             onResult(false, StringConstants.photoNotSelected)
             return
@@ -139,6 +145,7 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
         }
 
         viewModelScope.launch {
+            _isSaving.value = true  // Kayıt işlemi başlıyor
             try {
                 val newClothes = Clothes(
                     id = UUID.randomUUID().toString(),
@@ -155,8 +162,10 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
                     .set(newClothes)
                     .await()
 
+                _isSaving.value = false  // Kayıt başarılı, isSaving kapatılıyor
                 onResult(true, null)
             } catch (e: Exception) {
+                _isSaving.value = false  // Hata durumunda da kapatılıyor
                 onResult(false, e.message)
             }
         }

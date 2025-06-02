@@ -44,6 +44,7 @@ fun AddClothes(
     val coroutineScope = rememberCoroutineScope()
 
     val isLoading by viewModel.isLoading.collectAsState()
+    val isSaving by viewModel.isSaving.collectAsState() // Yeni eklendi
     val selectedImageUri by viewModel.selectedImageUri.collectAsState()
     val backgroundRemovedBitmap by viewModel.backgroundRemovedBitmap.collectAsState()
     val hasCameraPermission by viewModel.hasCameraPermission.collectAsState()
@@ -180,6 +181,17 @@ fun AddClothes(
                             }
                         }
                     }
+
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(Color.Black.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
                 }
 
                 Column(
@@ -233,9 +245,18 @@ fun AddClothes(
                                             }
                                         }
                                     }
-                                }
+                                },
+                                enabled = !isSaving // Kayıt yapılırken butonu devre dışı bırak
                             ) {
-                                BodyText(StringConstants.save)
+                                if (isSaving) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                } else {
+                                    BodyText(StringConstants.save)
+                                }
                             }
 
                             OutlinedButton(
@@ -310,21 +331,6 @@ fun AddClothes(
                     }
                 }
             }
-
-            // ✅ Tam ekran Loading göstergesi
-            if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.4f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
-                        strokeWidth = 4.dp
-                    )
-                }
-            }
         }
     }
 }
@@ -332,10 +338,9 @@ fun AddClothes(
 // Ayrı bir utils dosyasına alınabilir
 fun createImageUri(context: android.content.Context): Uri {
     val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
-    val file = java.io.File(context.cacheDir, "IMG_$timestamp.jpg")
-    return androidx.core.content.FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.provider",
-        file
-    )
+    val contentValues = android.content.ContentValues().apply {
+        put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "JPEG_$timestamp.jpg")
+        put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+    }
+    return context.contentResolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)!!
 }

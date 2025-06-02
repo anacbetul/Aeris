@@ -1,8 +1,10 @@
 package com.luci.aeris.domain.repository
 
+import Clothes
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.luci.aeris.domain.model.User
+import com.luci.aeris.utils.constants.StringConstants
 import kotlinx.coroutines.tasks.await
 
 class FirestoreUserRepository(
@@ -53,4 +55,24 @@ class FirestoreUserRepository(
     fun getUserId(): String? {
         return auth.currentUser?.uid
     }
+
+    suspend fun addClothesForCurrentUser(clothes: Clothes): Result<Unit> {
+        val userId = getUserId()
+        return if (userId != null) {
+            try {
+                usersCollection
+                    .document(userId)
+                    .collection(StringConstants.clothes)
+                    .document(clothes.id)
+                    .set(clothes)
+                    .await()
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        } else {
+            Result.failure(Exception("User is not logged in"))
+        }
+    }
+
 }
