@@ -4,6 +4,7 @@ import Clothes
 import android.Manifest
 import android.app.Application
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -12,13 +13,16 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yourapp.repository.ModelRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.BuildConfig
 import com.google.firebase.firestore.FirebaseFirestore
+import com.luci.aeris.data.RemoveBackgroundRepository
 import com.luci.aeris.presentation.ui.createImageUri
 import com.luci.aeris.utils.constants.StringConstants
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -57,7 +61,17 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _suitableConditions = MutableStateFlow<List<String>>(emptyList())
     val suitableConditions: StateFlow<List<String>> = _suitableConditions
+
     private val modelRepository = ModelRepository(application)
+
+    private val removeBgApiKey = "PXKErnQtMc58MtTPjftRgrgq"
+    private val removeBackgroundRepository = RemoveBackgroundRepository(removeBgApiKey)
+
+    private val _backgroundRemovedBitmap = MutableStateFlow<Bitmap?>(null)
+    val backgroundRemovedBitmap: StateFlow<Bitmap?> = _backgroundRemovedBitmap
+
+    private val _backgroundRemovedUri = MutableStateFlow<Uri?>(null)
+    val backgroundRemovedUri: StateFlow<Uri?> = _backgroundRemovedUri
 
     fun updateCameraPermission(granted: Boolean) {
         _hasCameraPermission.value = granted
@@ -71,10 +85,35 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
         _hasGalleryPermission.value = granted
     }
 
-    fun setSelectedImage(uri: Uri?) {
-        _selectedImageUri.value = uri
-        if (uri != null) {
-            analyzeImage(uri)
+    fun setSelectedImage(uri: Uri) {
+        viewModelScope.launch {
+            _selectedImageUri.value = uri
+
+            // Uri -> File dönüşümü
+            val imageFile = uriToFile(uri) ?: run {
+                _backgroundRemovedBitmap.value = null
+                _backgroundRemovedUri.value = null
+                return@launch
+            }
+
+            // Remove.bg API ile arka planı kaldır
+            val bgRemovedUri = removeBackgroundRepository.removeBackground(imageFile)
+            _backgroundRemovedUri.value = bgRemovedUri ?: uri
+
+            // Görüntüyü bitmap olarak yükle
+            val bitmap = bgRemovedUri?.let { uriToBitmap(it) } ?: uriToBitmap(uri)
+            _backgroundRemovedBitmap.value = bitmap ?: return@launch
+
+            // ML Model ile giysi tipini tahmin et
+            val predictedLabel = modelRepository.predict(bitmap)
+            _detectedType.value = predictedLabel
+
+            // Tahmine bağlı olarak uygun hava koşullarını hesapla (örnek)
+            _suitableConditions.value = when (predictedLabel.lowercase()) {
+                "mont", "ceket" -> listOf("Soğuk", "Rüzgarlı")
+                "tişört" -> listOf("Sıcak", "Ilık")
+                else -> emptyList()
+            }
         }
     }
 
@@ -82,16 +121,8 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
         _cameraImageUri.value = uri
     }
 
-    private fun analyzeImage(uri: Uri) {
-        viewModelScope.launch {
-            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-            val predictedLabel = modelRepository.predict(bitmap)
-            _detectedType.value = predictedLabel
-            _suitableConditions.value = listOf("Soğuk", "Rüzgarlı") // Bunu da modele entegre edebilirsiniz
-        }
-    }
     fun saveClothes(onResult: (Boolean, String?) -> Unit) {
-        val photoUri = _selectedImageUri.value
+        val photoUri = _backgroundRemovedUri.value ?: _selectedImageUri.value
         val type = _detectedType.value
         val conditions = _suitableConditions.value
 
@@ -132,7 +163,34 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
 
     fun clearSelection() {
         _selectedImageUri.value = null
+        _backgroundRemovedUri.value = null
+        _backgroundRemovedBitmap.value = null
         _detectedType.value = null
         _suitableConditions.value = emptyList()
+    }
+
+    // Uri'den File almak için yardımcı fonksiyon
+    private fun uriToFile(uri: Uri): File? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val tempFile = File.createTempFile("temp_image", ".jpg", context.cacheDir)
+            tempFile.outputStream().use { output ->
+                inputStream.copyTo(output)
+            }
+            tempFile
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    // Uri'den Bitmap almak için yardımcı fonksiyon
+    private fun uriToBitmap(uri: Uri): Bitmap? {
+        return try {
+            MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }

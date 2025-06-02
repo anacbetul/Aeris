@@ -27,6 +27,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "WEATHER_API_KEY", "\"${localProperties["WEATHER_API_KEY"]}\"")
+        buildConfigField("String", "REMOVE_BG_API_KEY", "\"${localProperties["REMOVE_BG_API_KEY"]}\"")
     }
 
     buildTypes {
@@ -115,4 +116,10 @@ dependencies {
     implementation("io.coil-kt:coil-gif:2.6.0")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.30.1")
     implementation ("org.tensorflow:tensorflow-lite:2.11.0")
+    implementation ("com.google.mlkit:segmentation-selfie:16.0.0-beta5")
+    implementation ("com.google.mlkit:vision-common:17.3.0")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.squareup.okio:okio:3.5.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+
 }
