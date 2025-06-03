@@ -12,7 +12,7 @@ class FirestoreUserRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) {
 
-    private val usersCollection = firestore.collection("users")
+    private val usersCollection = firestore.collection(StringConstants.users)
 
     // Kullanıcı Firestore'a kaydedilir (ilk kayıt veya profil güncelleme)
     suspend fun saveUser(user: User): Result<Unit> {
@@ -67,6 +67,25 @@ class FirestoreUserRepository(
                     .set(clothes)
                     .await()
                 Result.success(Unit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        } else {
+            Result.failure(Exception("User is not logged in"))
+        }
+    }
+    suspend fun getClothesForCurrentUser(): Result<List<Clothes>> {
+        val userId = getUserId()
+        return if (userId != null) {
+            try {
+                val snapshot = usersCollection
+                    .document(userId)
+                    .collection(StringConstants.clothes)
+                    .get()
+                    .await()
+
+                val clothesList = snapshot.documents.mapNotNull { it.toObject(Clothes::class.java) }
+                Result.success(clothesList)
             } catch (e: Exception) {
                 Result.failure(e)
             }
