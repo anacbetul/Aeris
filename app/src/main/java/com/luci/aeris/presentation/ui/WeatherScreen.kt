@@ -1,6 +1,8 @@
 package com.luci.aeris.presentation.ui
 
 import BodyText
+import HorizontalSpacer24
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Build
@@ -17,24 +19,42 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -45,20 +65,34 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.location.LocationServices
 import com.luci.aeris.R
 import com.luci.aeris.presentation.viewmodel.WeatherViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import androidx.core.net.toUri
 
+@SuppressLint("MissingPermission")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
+    val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
     val weatherList by viewModel.weatherState.collectAsState()
     val selectedWeather by viewModel.selectedDay.collectAsState()
     val currentWeather by viewModel.currentWeather.collectAsState()
-
-    val context = LocalContext.current
+    var location by remember { mutableStateOf("istanbul") }
+    var unitGroup by remember { mutableStateOf("metric") }
+    val showLocationSheet = remember { mutableStateOf(false) }
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    var useCurrentLocation by remember { mutableStateOf(false) }
+    val locationPermissionState =
+        rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
     val gifEnabledLoader = ImageLoader.Builder(context = context)
         .components {
             if (SDK_INT >= 28) {
@@ -100,10 +134,18 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                     ) {
                         if (index == 0) {
 
-                            BodyText(text = "Now", fontSize = 20.sp)
+                            BodyText(
+                                text = "Now",
+                                fontSize = 20.sp,
+                                textColor = MaterialTheme.colorScheme.tertiary
+                            )
                         } else {
                             Row {
-                                BodyText(text = (formatDay(weather.datetime)), fontSize = 20.sp)
+                                BodyText(
+                                    text = (formatDay(weather.datetime)),
+                                    fontSize = 20.sp,
+                                    textColor = MaterialTheme.colorScheme.tertiary
+                                )
                             }
                         }
                     }
@@ -112,18 +154,53 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
         }
 
     }
+
     selectedWeather?.let { weather ->
-        FrostedGlassCard {
+        FrostedGlassCard(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            unitGroup = unitGroup,
+            onUnitChange = { unitGroup = it },
+            showLocationSheet = showLocationSheet.value,
+            location = location,
+            onReloadClick = { viewModel.loadWeather(location, unitGroup) },
+            onShowLocationSheetChange = { showLocationSheet.value = it },
+            onIconClick = {
+                expanded = true
+            }) {
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                BodyText(
-                    text = "${weather.temp.toInt()}°C",
-                    fontSize = 64.sp,
-                )
+                Column(
+                    modifier = Modifier.weight(1f) // Sol taraf
+                ) {
+                    var unitSymbol: String = "C"
+                    if (unitGroup == "metric")
+                        unitSymbol = "C"
+                    if (unitGroup == "us")
+                        unitSymbol = "F"
+                    BodyText(
+                        text = "${weather.temp.toInt()}°${unitSymbol}",
+                        fontSize = 64.sp, textColor = MaterialTheme.colorScheme.tertiary
+                    )
+                    if (weather == weatherList.first()) {
+                        BodyText(
+                            "Feels like ${weather.feelslike.toInt()}°",
+                            fontSize = 20.sp,
+                            textColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    } else {
+                        BodyText(
+                            "${weather.tempmax.toInt()}°/ ${weather.tempmin.toInt()}° \nFeels like ${weather.feelslike.toInt()}°",
+                            fontSize = 20.sp, textColor = MaterialTheme.colorScheme.tertiary
+                        )
+
+                    }
+                }
                 //WeatherIcon(weather.icon)
 
                 val gifUri = getWeatherIconUri(weather.icon, context)
@@ -134,22 +211,100 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                         .build(),
                     imageLoader = gifEnabledLoader
                 )
+                HorizontalSpacer24()
                 Image(
-                    modifier = Modifier.size(150.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(max = 130.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp)),
                     painter = painter,
-                    contentDescription = null,)
+                    contentDescription = weather.conditions,
+                    contentScale = ContentScale.Fit
+                )
 
 
             }
-            BodyText(weather.resolvedAddress)
             Spacer(modifier = Modifier.size(24.dp))
+            BodyText(weather.resolvedAddress, textColor = MaterialTheme.colorScheme.tertiary)
             if (weather == weatherList.first()) {
-                BodyText("Feels like ${weather.feelslike.toInt()}°")
-                BodyText(formatTime(weather.datetime), fontSize = 12.sp)
+                BodyText(
+                    formatTime(weather.datetime),
+                    fontSize = 12.sp,
+                    textColor = MaterialTheme.colorScheme.tertiary
+                )
             } else {
-                BodyText("${weather.tempmax.toInt()}°/ ${weather.tempmin.toInt()}° Feels like ${weather.feelslike.toInt()}°")
-                BodyText(formatDate(weather.datetime), fontSize = 12.sp)
+                BodyText(
+                    formatDate(weather.datetime),
+                    fontSize = 12.sp,
+                    textColor = MaterialTheme.colorScheme.tertiary
+                )
 
+            }
+        }
+
+    }
+    LaunchedEffect(useCurrentLocation) {
+        if (useCurrentLocation) {
+            if (locationPermissionState.status.isGranted) {
+                fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+                    if (loc != null) {
+                        val latLngString = "${loc.latitude},${loc.longitude}"
+                        location = latLngString
+                        viewModel.changeLocation(location)
+                        viewModel.loadWeather(location, unitGroup)
+                        showLocationSheet.value = false
+                    } else {
+                        // Konum alınamadıysa kullanıcıyı bilgilendir veya hata yönetimi yap
+                    }
+                }
+            } else {
+                locationPermissionState.launchPermissionRequest()
+            }
+        }
+    }
+    if (showLocationSheet.value) {
+        ModalBottomSheet(
+            onDismissRequest = { showLocationSheet.value = false },
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            containerColor = MaterialTheme.colorScheme.background,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.7f)  // ekranın %70'i kadar yükseklik
+                    .padding(16.dp)
+            ) {
+                OutlinedTextField(
+                    value = location,
+                    onValueChange = {
+                        location = it
+                        useCurrentLocation = false
+                    },
+                    label = { Text("Location") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        useCurrentLocation = true
+                        showLocationSheet.value = false
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Use Current Location")
+                }
+                Button(
+                    onClick = {
+                        viewModel.changeLocation(location)
+                        viewModel.loadWeather(location, unitGroup)
+                        showLocationSheet.value = false
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Get Weather")
+                }
             }
         }
     }
@@ -157,10 +312,24 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
 
 
 @Composable
-fun FrostedGlassCard(content: @Composable ColumnScope.() -> Unit) {
+fun FrostedGlassCard(
+    modifier: Modifier = Modifier,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    unitGroup: String,
+    showLocationSheet: Boolean,
+    location: String,
+    onUnitChange: (String) -> Unit,
+    onReloadClick: () -> Unit,
+    onIconClick: () -> Unit = {},
+    onShowLocationSheetChange: (Boolean) -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+
+) {
+
     Box(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(8.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
         //.background(MaterialTheme.colorScheme.primary) // dışarıdan transparan
@@ -171,11 +340,67 @@ fun FrostedGlassCard(content: @Composable ColumnScope.() -> Unit) {
                 .background(Color.White.copy(alpha = 0.5f))
                 .blur(20.dp)
         )
-        Column(
-            modifier = Modifier
-                .padding(16.dp),
-            content = content
-        )
+        Column(modifier = Modifier.fillMaxSize()) {
+            Row(modifier = Modifier.align(Alignment.End)) {
+                Box {
+                    IconButton(
+                        onClick = {
+                            onIconClick()
+                            onExpandedChange(true)
+                        },
+                        modifier = Modifier
+                        //.align(Alignment.TopEnd)
+                        //.padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "More Info",
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { onExpandedChange(false) },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                    ) {
+                        DropdownMenuItem(
+                            onClick = {
+                                onExpandedChange(false)
+                                onShowLocationSheetChange(true)
+                            }
+                        ) {
+                            BodyText("Location", textColor = MaterialTheme.colorScheme.tertiary)
+                        }
+                        DropdownMenuItem(onClick = {
+                            onUnitChange("metric")
+                            onExpandedChange(false)
+                            onReloadClick()
+                        }) {
+                            BodyText(
+                                "Celsius (Metric)",
+                                textColor = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                        DropdownMenuItem(onClick = {
+                            onUnitChange("us")
+                            onExpandedChange(false)
+                            onReloadClick()
+                        }) {
+                            BodyText(
+                                "Fahrenheit (US)",
+                                textColor = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                    }
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+                content = content
+            )
+        }
     }
 }
 
@@ -216,6 +441,7 @@ fun WeatherIcon(iconName: String) {
 
 }
 
+@SuppressLint("UseKtx")
 fun getWeatherIconUri(iconName: String, context: Context): Uri {
     val resourceId = when (iconName) {
         "clear-day" -> R.raw.sun_17102813
@@ -243,7 +469,7 @@ fun getWeatherIconUri(iconName: String, context: Context): Uri {
         else -> R.raw.sun_17102813
     }
 
-    return Uri.parse("android.resource://${context.packageName}/$resourceId")
+    return "android.resource://${context.packageName}/$resourceId".toUri()
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

@@ -122,5 +122,7 @@ dependencies {
     implementation("com.squareup.okio:okio:3.5.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation ("com.google.accompanist:accompanist-swiperefresh:0.30.1")
+    implementation ("com.google.accompanist:accompanist-permissions:0.37.3")
+    implementation ("com.google.android.gms:play-services-location:21.3.0")
 
 }

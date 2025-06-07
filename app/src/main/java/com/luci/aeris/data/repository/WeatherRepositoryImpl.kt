@@ -16,8 +16,8 @@ class WeatherRepositoryImpl @Inject constructor(
 //        return response.toDomainList()
 //    }
 
-    override suspend fun getWeatherResponse(): WeatherResponse {
-        val response = api.getWeather(apiKey = apiKey)
+    override suspend fun getWeatherResponse(location: String, unitGroup: String): WeatherResponse {
+        val response = api.getWeather(location = location, unitGroup = unitGroup, apiKey = apiKey)
         return WeatherResponse(
             resolvedAddress = response.resolvedAddress,
             days = response.days.map { it },

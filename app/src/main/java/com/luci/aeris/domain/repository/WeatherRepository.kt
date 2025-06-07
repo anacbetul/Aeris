@@ -6,5 +6,5 @@ import com.luci.aeris.domain.model.WeatherResponse
 
 interface WeatherRepository {
     //suspend fun getWeather(): List<Weather>
-    suspend fun getWeatherResponse(): WeatherResponse
+    suspend fun getWeatherResponse(location:String, unitGroup: String): WeatherResponse
 }

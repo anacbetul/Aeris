@@ -1,3 +1,4 @@
+import android.R.attr.label
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.google.common.collect.Multimaps.index
 import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.domain.model.BottomNavItem
@@ -36,9 +38,17 @@ import com.luci.aeris.domain.model.BottomNavItem
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavItem(StringConstants.main, Icons.Outlined.Home, NavigationRoutes.Main),
-        BottomNavItem(StringConstants.outfit, Icons.Outlined.Checkroom, NavigationRoutes.ChooseOutfit),
+        BottomNavItem(
+            StringConstants.outfit,
+            Icons.Outlined.Checkroom,
+            NavigationRoutes.ChooseOutfit
+        ),
         BottomNavItem(StringConstants.add, Icons.Outlined.Add, NavigationRoutes.AddClothes),
-        BottomNavItem(StringConstants.wardrobe, Icons.Outlined.CurtainsClosed, NavigationRoutes.Wardrobe),
+        BottomNavItem(
+            StringConstants.wardrobe,
+            Icons.Outlined.CurtainsClosed,
+            NavigationRoutes.Wardrobe
+        ),
         BottomNavItem(StringConstants.profile, Icons.Outlined.Person, NavigationRoutes.Profile),
     )
 
@@ -55,7 +65,7 @@ fun BottomNavigationBar(navController: NavController) {
         tonalElevation = 3.dp,
         containerColor = Color.Transparent
     ) {
-        items.forEach { item ->
+        items.forEachIndexed { index, item ->
             val selected = currentDestination == item.route
 
             val iconTint by animateColorAsState(
@@ -63,13 +73,16 @@ fun BottomNavigationBar(navController: NavController) {
                 animationSpec = tween(300)
             )
             val labelColor by animateColorAsState(
-                targetValue = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                targetValue = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                    alpha = 0.6f
+                ),
                 animationSpec = tween(300)
             )
             val backgroundColor by animateColorAsState(
                 targetValue = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent,
                 animationSpec = tween(300)
             )
+            val isCenterItem = index == 2 // Ortadaki "+" butonu
             NavigationBarItem(
                 selected = selected,
                 onClick = {
@@ -82,22 +95,43 @@ fun BottomNavigationBar(navController: NavController) {
                     }
                 },
                 icon = {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(backgroundColor, shape = RoundedCornerShape(12.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.label,
-                            tint = iconTint,
-                            modifier = Modifier.size(20.dp)
-                        )
+                    if (isCenterItem) {// Ortadaki item için özel tasarım
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.onPrimary,
+                                    shape = RoundedCornerShape(50)
+                                )
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.label,
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                    } else {
+                        // Diğer item'lar
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(backgroundColor, shape = RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.label,
+                                tint = iconTint,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 },
                 label = {
-                    if (selected) {
+                    if (!isCenterItem && selected) {
                         Text(
                             text = item.label,
                             fontSize = 12.sp,
