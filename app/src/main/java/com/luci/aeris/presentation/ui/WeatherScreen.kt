@@ -32,6 +32,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
@@ -55,6 +57,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -319,47 +322,53 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                         textColor = MaterialTheme.colorScheme.tertiary
                     )
                 }
-                OutlinedTextField(
-                    value = (
-                            (if (useCurrentLocation)
-                                ""
-                            else
-                                location)),
-                    onValueChange = {
-                        location = it
-                        useCurrentLocation = false
-                    },
-                    label = { Text("Location") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.LocationOn,
-                            contentDescription = "location",
-                            tint = MaterialTheme.colorScheme.secondary
-                        )
-                    },
-                    trailingIcon = {
-                        if (location.isNotEmpty()) {
-                            IconButton(onClick = {
-                                location = ""
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Close,
-                                    contentDescription = "Clear text",
-                                    tint = MaterialTheme.colorScheme.tertiary
-                                )
-                            }
-                        }
-                    },
-                    placeholder = { Text("Please enter a location") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = MaterialTheme.colorScheme.tertiary,
-                        focusedLabelColor = MaterialTheme.colorScheme.tertiary,
-                        cursorColor = MaterialTheme.colorScheme.tertiary,
-                        errorCursorColor = MaterialTheme.colorScheme.secondary,
-                        textColor = MaterialTheme.colorScheme.tertiary
+                CompositionLocalProvider(
+                    LocalTextSelectionColors provides TextSelectionColors(
+                        handleColor = MaterialTheme.colorScheme.secondary,
+                        backgroundColor = MaterialTheme.colorScheme.primary
                     )
-                )
+                ) {
+                    OutlinedTextField(
+                        value = (
+                                (if (useCurrentLocation)
+                                    ""
+                                else
+                                    location)),
+                        onValueChange = {
+                            location = it
+                            useCurrentLocation = false
+                        },
+                        label = { Text("Location") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.LocationOn,
+                                contentDescription = "location",
+                                tint = MaterialTheme.colorScheme.secondary
+                            )
+                        },
+                        trailingIcon = {
+                            if (location.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    location = ""
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Close,
+                                        contentDescription = "Clear text",
+                                        tint = MaterialTheme.colorScheme.tertiary
+                                    )
+                                }
+                            }
+                        },
+                        placeholder = { Text("Please enter a location") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = MaterialTheme.colorScheme.tertiary,
+                            focusedLabelColor = MaterialTheme.colorScheme.tertiary,
+                            cursorColor = MaterialTheme.colorScheme.tertiary,
+                            textColor = MaterialTheme.colorScheme.tertiary,
+                        )
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
