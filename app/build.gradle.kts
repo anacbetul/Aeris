@@ -124,5 +124,6 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-swiperefresh:0.30.1")
     implementation ("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation ("com.google.android.gms:play-services-location:21.3.0")
-
+    implementation ("androidx.compose.material3:material3:1.3.2")
+    implementation("androidx.compose.material3:material3:1.4.0-alpha15")
 }

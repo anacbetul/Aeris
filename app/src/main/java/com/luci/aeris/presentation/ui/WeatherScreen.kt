@@ -4,9 +4,11 @@ import BodyText
 import HorizontalSpacer24
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Geocoder
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,18 +28,28 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +71,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
@@ -71,10 +84,11 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
 import com.luci.aeris.R
 import com.luci.aeris.presentation.viewmodel.WeatherViewModel
+import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import androidx.core.net.toUri
+import java.util.Locale
 
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -249,13 +263,20 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
             if (locationPermissionState.status.isGranted) {
                 fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
                     if (loc != null) {
-                        val latLngString = "${loc.latitude},${loc.longitude}"
-                        location = latLngString
+                        val lat = loc.latitude
+                        val lon = loc.longitude
+                        val resolvedLocation = getCityNameFromCoordinates(context, lat, lon)
+
+                        location = resolvedLocation
                         viewModel.changeLocation(location)
                         viewModel.loadWeather(location, unitGroup)
                         showLocationSheet.value = false
                     } else {
-                        // Konum alınamadıysa kullanıcıyı bilgilendir veya hata yönetimi yap
+                        Toast.makeText(
+                            context,
+                            "Unable to access your location. Please select it manually.",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             } else {
@@ -273,35 +294,84 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.7f)  // ekranın %70'i kadar yükseklik
-                    .padding(16.dp)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .clickable {
+                            useCurrentLocation = true
+                            showLocationSheet.value = false
+                        }
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.MyLocation,
+                        contentDescription = "My Location",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    BodyText(
+                        "Use Current Location",
+                        textColor = MaterialTheme.colorScheme.tertiary
+                    )
+                }
                 OutlinedTextField(
-                    value = location,
+                    value = (
+                            (if (useCurrentLocation)
+                                ""
+                            else
+                                location)),
                     onValueChange = {
                         location = it
                         useCurrentLocation = false
                     },
                     label = { Text("Location") },
-                    modifier = Modifier.fillMaxWidth()
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.LocationOn,
+                            contentDescription = "location",
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    },
+                    trailingIcon = {
+                        if (location.isNotEmpty()) {
+                            IconButton(onClick = {
+                                location = ""
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "Clear text",
+                                    tint = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                        }
+                    },
+                    placeholder = { Text("Please enter a location") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = MaterialTheme.colorScheme.tertiary,
+                        focusedLabelColor = MaterialTheme.colorScheme.tertiary,
+                        cursorColor = MaterialTheme.colorScheme.tertiary,
+                        errorCursorColor = MaterialTheme.colorScheme.secondary,
+                        textColor = MaterialTheme.colorScheme.tertiary
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        useCurrentLocation = true
-                        showLocationSheet.value = false
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Use Current Location")
-                }
                 Button(
                     onClick = {
                         viewModel.changeLocation(location)
                         viewModel.loadWeather(location, unitGroup)
                         showLocationSheet.value = false
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.background
+                    )
                 ) {
                     Text("Get Weather")
                 }
@@ -353,7 +423,7 @@ fun FrostedGlassCard(
                         //.padding(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.MoreVert,
+                            imageVector = Icons.Filled.MoreVert,
                             contentDescription = "More Info",
                             tint = MaterialTheme.colorScheme.tertiary
                         )
@@ -361,36 +431,83 @@ fun FrostedGlassCard(
                     DropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { onExpandedChange(false) },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.background),
+                        shape = RoundedCornerShape(16.dp),
+                        shadowElevation = 8.dp,
                     ) {
                         DropdownMenuItem(
                             onClick = {
                                 onExpandedChange(false)
                                 onShowLocationSheetChange(true)
+                            },
+                            text = {
+                                BodyText(
+                                    "Location",
+                                    textColor = MaterialTheme.colorScheme.tertiary
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.LocationOn,
+                                    contentDescription = "location",
+                                    tint = MaterialTheme.colorScheme.secondary
+                                )
                             }
-                        ) {
-                            BodyText("Location", textColor = MaterialTheme.colorScheme.tertiary)
-                        }
-                        DropdownMenuItem(onClick = {
-                            onUnitChange("metric")
-                            onExpandedChange(false)
-                            onReloadClick()
-                        }) {
-                            BodyText(
-                                "Celsius (Metric)",
-                                textColor = MaterialTheme.colorScheme.tertiary
+                        )
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.secondary,
+                            thickness = 2.dp,
+                            modifier = Modifier.padding(start = 10.dp, end = 10.dp)
+                        )
+                        DropdownMenuItem(
+                            onClick = {
+                                onUnitChange("metric")
+                                onExpandedChange(false)
+                                onReloadClick()
+                            },
+                            text = {
+                                BodyText(
+                                    "Celsius (Metric)",
+                                    textColor = MaterialTheme.colorScheme.tertiary
+                                )
+                            },
+                            leadingIcon = {
+                                if (unitGroup == "metric") {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = "unit group",
+                                        tint = MaterialTheme.colorScheme.secondary
+                                    )
+                                } else {
+                                    null
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            onClick = {
+                                onUnitChange("us")
+                                onExpandedChange(false)
+                                onReloadClick()
+                            },
+                            text = {
+                                BodyText(
+                                    "Fahrenheit (US)",
+                                    textColor = MaterialTheme.colorScheme.tertiary
+                                )
+                            },
+                            leadingIcon = {
+                                if (unitGroup == "us") {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = "unit group",
+                                        tint = MaterialTheme.colorScheme.secondary
+                                    )
+                                } else {
+                                    null
+                                }
+                            },
+
                             )
-                        }
-                        DropdownMenuItem(onClick = {
-                            onUnitChange("us")
-                            onExpandedChange(false)
-                            onReloadClick()
-                        }) {
-                            BodyText(
-                                "Fahrenheit (US)",
-                                textColor = MaterialTheme.colorScheme.tertiary
-                            )
-                        }
                     }
                 }
             }
@@ -403,6 +520,27 @@ fun FrostedGlassCard(
         }
     }
 }
+
+
+fun getCityNameFromCoordinates(context: Context, latitude: Double, longitude: Double): String {
+    val geocoder = Geocoder(context, Locale.getDefault())
+    return try {
+        val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+        if (addresses != null && addresses.isNotEmpty()) {
+            val address = addresses[0]
+            val city = address.locality ?: ""
+            val district = address.subAdminArea ?: ""
+            val country = address.countryName ?: ""
+            "$district, $city, $country"
+        } else {
+            "Unknown Location"
+        }
+    } catch (e: IOException) {
+        e.printStackTrace()
+        "Location error"
+    }
+}
+
 
 @Composable
 fun WeatherIcon(iconName: String) {
