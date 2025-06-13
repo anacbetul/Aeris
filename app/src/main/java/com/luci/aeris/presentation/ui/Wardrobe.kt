@@ -2,6 +2,7 @@ package com.luci.aeris.presentation.ui
 
 import BodyText
 import Clothes
+import android.R.attr.onClick
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -100,9 +101,7 @@ fun Wardrobe(
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
                                             rowItems.forEach { clothes ->
-                                                ClothesCard(clothes = clothes, onClick = {
-                                                    navigator.navigate("${NavigationRoutes.ClothesDetail}/${clothes.id}")
-                                                })
+                                                ClothesCard(clothes = clothes)
                                             }
                                             repeat(4 - rowItems.size) {
                                                 Spacer(modifier = Modifier
@@ -133,15 +132,14 @@ fun Wardrobe(
 }
 
 @Composable
-fun ClothesCard(clothes: Clothes, onClick: () -> Unit) {
+fun ClothesCard(clothes: Clothes) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val cardSize = screenWidth / 5
 
     Card(
         modifier = Modifier
             .width(cardSize)
-            .aspectRatio(1f)
-            .clickable { onClick() },
+            .aspectRatio(1f),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(2.dp)
