@@ -73,6 +73,7 @@ class StringConstants {
         const val userSessionNotFound="User session could not be found"
         const val users="users"
         const val clothes="clothes"
+        const val dontHaveClothes="You dont have any clothes"
 
 
 

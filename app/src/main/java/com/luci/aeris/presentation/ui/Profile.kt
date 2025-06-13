@@ -1,6 +1,7 @@
 package com.luci.aeris.presentation.ui
 
 import BodyText
+import android.R.attr.onClick
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.presentation.viewmodel.ThemeViewModel
 import com.luci.aeris.utils.navigator.Navigator
@@ -136,15 +138,15 @@ fun Profile(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        BodyText("${StringConstants.gender}: ")
+                       BodyText(text = StringConstants.selectGender)
                         GenderDropdownMenu(
-                            selectedGender = selectedGender,
+                            selectedGender = user?.gender?:"Other",
                             onGenderSelected = { selectedGender = it }
                         )
                     }
 
                     Button(
-                        onClick = { /* Düzenleme işlemi */ },
+                        onClick = {  viewModel.updateUserGender(selectedGender) },
                         modifier = Modifier.align(Alignment.End),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                     ) {

@@ -77,4 +77,19 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+    fun updateUserGender(newGender: String) {
+        viewModelScope.launch {
+            user?.let { currentUser ->
+                val updatedUser = currentUser.copy(gender = newGender)
+                firestoreUserRepository.saveUser(updatedUser)
+                    .onSuccess {
+                        user = updatedUser // Ekranda da güncellenmiş hali yansıtılsın
+                        Log.d("ProfileViewModel", "Kullanıcı başarıyla güncellendi.")
+                    }
+                    .onFailure {
+                        Log.e("ProfileViewModel", "Kullanıcı güncellenemedi: ${it.message}")
+                    }
+            }
+        }
+    }
 }
