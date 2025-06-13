@@ -206,7 +206,7 @@ fun AddClothes(
                             fontWeight = FontWeight.W700
                         )
                         Divider()
-                        Text(text = "${StringConstants.adddeOn} $currentDate")
+                        Text(text = "${StringConstants.addedOn} $currentDate")
                         Text(text = "${StringConstants.category}: $detectedType")
                     }
                     if (suitableConditions.isNotEmpty()) {

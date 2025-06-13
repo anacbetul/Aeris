@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -40,7 +39,6 @@ import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -103,11 +101,12 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
     val weatherList by viewModel.weatherState.collectAsState()
     val selectedWeather by viewModel.selectedDay.collectAsState()
     val currentWeather by viewModel.currentWeather.collectAsState()
-    var location by remember { mutableStateOf("istanbul") }
+    var location by remember { mutableStateOf("") }
+    val effectiveLocation = if (location.isNotBlank()) location else "istanbul"
     var unitGroup by remember { mutableStateOf("metric") }
     val showLocationSheet = remember { mutableStateOf(false) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-    var useCurrentLocation by remember { mutableStateOf(false) }
+    var useCurrentLocation by remember { mutableStateOf(true) }
     val locationPermissionState =
         rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
     val gifEnabledLoader = ImageLoader.Builder(context = context)
@@ -180,7 +179,7 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
             onUnitChange = { unitGroup = it },
             showLocationSheet = showLocationSheet.value,
             location = location,
-            onReloadClick = { viewModel.loadWeather(location, unitGroup) },
+            onReloadClick = { viewModel.loadWeather(effectiveLocation, unitGroup) },
             onShowLocationSheetChange = { showLocationSheet.value = it },
             onIconClick = {
                 expanded = true
@@ -261,9 +260,10 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
         }
 
     }
-    LaunchedEffect(useCurrentLocation) {
-        if (useCurrentLocation) {
+    LaunchedEffect(Unit) {
+        if (locationPermissionState.status.isGranted && useCurrentLocation) {
             if (locationPermissionState.status.isGranted) {
+                useCurrentLocation = true
                 fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
                     if (loc != null) {
                         val lat = loc.latitude
@@ -300,13 +300,26 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-
                 Row(
                     modifier = Modifier
                         .align(Alignment.End)
                         .clickable {
-                            useCurrentLocation = true
+                            if (!locationPermissionState.status.isGranted) {
+                                locationPermissionState.launchPermissionRequest()
+                            }
                             showLocationSheet.value = false
+                            if (locationPermissionState.status.isGranted) {
+                                useCurrentLocation = true
+                                fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+                                    if (loc != null) {
+                                        val resolvedLocation = getCityNameFromCoordinates(context, loc.latitude, loc.longitude)
+                                        location = resolvedLocation
+                                        viewModel.changeLocation(resolvedLocation)
+                                        viewModel.loadWeather(resolvedLocation, unitGroup)
+                                        showLocationSheet.value = false
+                                    }
+                                }
+                            }
                         }
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -374,7 +387,7 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                 Button(
                     onClick = {
                         viewModel.changeLocation(location)
-                        viewModel.loadWeather(location, unitGroup)
+                        viewModel.loadWeather(effectiveLocation, unitGroup)
                         showLocationSheet.value = false
                     },
                     colors = ButtonDefaults.buttonColors(

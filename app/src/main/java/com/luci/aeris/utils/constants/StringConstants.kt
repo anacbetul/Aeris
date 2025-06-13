@@ -61,7 +61,7 @@ class StringConstants {
         const val pickImage="Pick a Image"
         const val addAPhoto="Add a Photo"
         const val clotheDetail="Clothing Details"
-        const val adddeOn= "Added On:"
+        const val addedOn= "Added On:"
         const val category="Category"
         const val suitableCondition="Suitable Weather Conditions:"
         const val clothesSuccesfly="Clothes saved successfully."

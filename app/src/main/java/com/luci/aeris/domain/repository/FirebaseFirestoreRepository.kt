@@ -52,6 +52,7 @@ class FirestoreUserRepository(
             Result.failure(e)
         }
     }
+
     fun getUserId(): String? {
         return auth.currentUser?.uid
     }
@@ -74,6 +75,7 @@ class FirestoreUserRepository(
             Result.failure(Exception("User is not logged in"))
         }
     }
+
     suspend fun getClothesForCurrentUser(): Result<List<Clothes>> {
         val userId = getUserId()
         return if (userId != null) {
@@ -86,6 +88,26 @@ class FirestoreUserRepository(
 
                 val clothesList = snapshot.documents.mapNotNull { it.toObject(Clothes::class.java) }
                 Result.success(clothesList)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        } else {
+            Result.failure(Exception("User is not logged in"))
+        }
+    }
+
+    suspend fun deleteClothesForCurrentUser(idClothes: String): Result<Boolean> {
+        val userId = getUserId()
+        return if (userId != null) {
+            try {
+                usersCollection
+                    .document(userId)
+                    .collection(StringConstants.clothes)
+                    .document(idClothes)
+                    .delete()
+                    .await()
+
+                Result.success(true)
             } catch (e: Exception) {
                 Result.failure(e)
             }

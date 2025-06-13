@@ -44,5 +44,17 @@ class WardrobeViewmodel(
         }
     }
 
+    fun deleteClothes(id: String) {
+        viewModelScope.launch {
+            val result = repository.deleteClothesForCurrentUser(id)
+            if (result.isSuccess) {
+                refresh() // verileri tekrar yükle, varsa getClothesFromFirebase vs.
+            } else {
+                // hata mesajı göstermek istiyorsan burada yapabilirsin
+            }
+        }
+    }
+
+
     fun refresh() = fetchUserClothes()
 }

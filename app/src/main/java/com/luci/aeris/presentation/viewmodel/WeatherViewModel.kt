@@ -72,7 +72,6 @@ class WeatherViewModel @Inject constructor(
                     location
                 }
                 val response = repository.getWeatherResponse(queryLocation, unitGroup)
-                Log.d("WeatherVM", "Weather response: $response")
                 val resolvedAddress = response.resolvedAddress ?: ""
                 val current = response.currentConditions?.toCurrentCondition(resolvedAddress)
                 _currentWeather.value = current

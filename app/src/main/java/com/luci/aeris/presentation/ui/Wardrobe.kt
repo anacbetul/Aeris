@@ -2,22 +2,48 @@ package com.luci.aeris.presentation.ui
 
 import BodyText
 import Clothes
-import android.R.attr.onClick
+import android.R.attr.text
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -28,11 +54,10 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.luci.aeris.R
 import com.luci.aeris.presentation.viewmodel.WardrobeViewmodel
-import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.utils.navigator.Navigator
-import retrofit2.http.Body
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Wardrobe(
     navigator: Navigator,
@@ -40,13 +65,40 @@ fun Wardrobe(
 ) {
     val clothesByCategory = viewModel.clothesByCategory.collectAsState().value
     val isLoading = viewModel.isLoading.collectAsState().value
-
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
+    val showDetailSheet = remember { mutableStateOf(false) }
+    var selectedClothes by remember { mutableStateOf<Clothes?>(null) }
+
+
+    if (selectedClothes != null && showDetailSheet.value == true) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showDetailSheet.value = false
+                selectedClothes = null
+            },
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            containerColor = MaterialTheme.colorScheme.background,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.7f)  // ekranın %70'i kadar yükseklik
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                ClothesDetailContent(clothes = selectedClothes!!) {
+                    viewModel.deleteClothes(selectedClothes!!.id)
+                    showDetailSheet.value = false
+                }
+            }
+        }
+    }
+
 
     SwipeRefresh(
         state = swipeRefreshState,
         onRefresh = {
-            viewModel.refresh()
+            viewModel.refresh()  // ViewModel'deki refresh fonksiyonunu çağır
         },
     ) {
         if (isLoading) {
@@ -57,9 +109,7 @@ fun Wardrobe(
                 CircularProgressIndicator()
             }
         } else {
-            // Tüm kıyafet listeleri boş mu?
             val isClothesEmpty = clothesByCategory.values.all { it.isEmpty() }
-
             if (isClothesEmpty) {
                 LazyColumn(
                     modifier = Modifier
@@ -69,12 +119,9 @@ fun Wardrobe(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     item {
-                        BodyText(
-                            text = StringConstants.dontHaveClothes
-                        )
+                        BodyText(text = StringConstants.dontHaveClothes)
                     }
                 }
-
             } else {
                 LazyColumn(
                     modifier = Modifier
@@ -101,12 +148,18 @@ fun Wardrobe(
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
                                             rowItems.forEach { clothes ->
-                                                ClothesCard(clothes = clothes)
+                                                ClothesCard(clothes = clothes) {
+                                                    selectedClothes = clothes
+                                                    showDetailSheet.value = true
+                                                }
+
                                             }
                                             repeat(4 - rowItems.size) {
-                                                Spacer(modifier = Modifier
-                                                    .weight(1f)
-                                                    .aspectRatio(1f))
+                                                Spacer(
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .aspectRatio(1f)
+                                                )
                                             }
                                         }
                                     }
@@ -128,39 +181,102 @@ fun Wardrobe(
                 }
             }
         }
+
     }
 }
 
 @Composable
-fun ClothesCard(clothes: Clothes) {
+fun ClothesCard(clothes: Clothes, onClick: () -> Unit) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val cardSize = screenWidth / 5
 
-    Card(
+
+//            Card(
+//                modifier = Modifier
+//                    .width(cardSize)
+//                    .aspectRatio(1f),
+////                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+//                shape = RoundedCornerShape(8.dp),
+//                elevation = CardDefaults.cardElevation(2.dp),
+//                onClick = onClick
+//            ) {
+    Box(
         modifier = Modifier
             .width(cardSize)
-            .aspectRatio(1f),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick() }
     ) {
+        // Arka plan: bulanık + transparan
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier
+                .matchParentSize()
+                .background(Color.White.copy(alpha = 0.2f))
+                .blur(16.dp) // sadece bu kutu bulanık
+        )
+
+        // Ön plan: Görsel net şekilde üstte yer alır
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(4.dp) // kenarlardan biraz içe al
+                .clip(RoundedCornerShape(16.dp))
         ) {
             if (!clothes.photoPath.isNullOrEmpty()) {
                 Image(
                     painter = rememberAsyncImagePainter(clothes.photoPath),
                     contentDescription = "Clothes image",
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(16.dp))
                 )
             } else {
                 Image(
                     painter = painterResource(id = R.drawable.cloudy),
                     contentDescription = "Default image",
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(16.dp))
                 )
             }
         }
     }
 }
+
+@Composable
+fun ClothesDetailContent(clothes: Clothes, onDeleteClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(modifier = Modifier
+            .align(Alignment.End)
+            .clickable { onDeleteClick() }) {
+            Icon(
+                imageVector = Icons.Filled.Delete,
+                contentDescription = "My Location",
+                tint = Color.Red
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            BodyText("Sil", textColor = Color.Red)
+
+        }
+        if (!clothes.photoPath.isNullOrEmpty()) {
+            Image(
+                painter = rememberAsyncImagePainter(clothes.photoPath),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 200.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        BodyText(text = "${StringConstants.category}: ${clothes.type}", textColor = MaterialTheme.colorScheme.tertiary)
+        BodyText(text = "${StringConstants.addedOn} ${clothes.dateAdded}", textColor = MaterialTheme.colorScheme.tertiary)
+        BodyText(text = "${StringConstants.suitableCondition} ${clothes.suitableWeather}", textColor = MaterialTheme.colorScheme.tertiary)
+    }
+}
+
+
