@@ -231,7 +231,11 @@ fun AddClothes(
                                     viewModel.saveClothes { success, errorMessage ->
                                         coroutineScope.launch {
                                             if (success) {
-                                                navigator.navigate(NavigationRoutes.Wardrobe)
+                                                navigator.navigate(
+                                                    route = NavigationRoutes.Wardrobe,
+                                                    popUpTo = NavigationRoutes.AddClothes,
+                                                    inclusive = true
+                                                )
                                                 snackbarHostState.showSnackbar(
                                                     message = StringConstants.clothesSuccesfly,
                                                     actionLabel = StringConstants.success,

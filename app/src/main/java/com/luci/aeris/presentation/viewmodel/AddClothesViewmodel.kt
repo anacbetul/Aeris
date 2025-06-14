@@ -67,7 +67,7 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
 
     private val modelRepository = ModelRepository(application)
 
-    private val removeBgApiKey = "PXKErnQtMc58MtTPjftRgrgq"
+    private val removeBgApiKey = "9rHvFSa3Nov4GpQNmd3TyCNr"
     private val removeBackgroundRepository = RemoveBackgroundRepository(removeBgApiKey)
 
     private val _backgroundRemovedBitmap = MutableStateFlow<Bitmap?>(null)
