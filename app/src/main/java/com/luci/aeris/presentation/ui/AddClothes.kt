@@ -30,6 +30,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.luci.aeris.utils.navigator.Navigator
 import com.luci.aeris.presentation.viewmodel.AddClothesViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.utils.constants.StringConstants
 import kotlinx.coroutines.launch
 
@@ -230,12 +231,14 @@ fun AddClothes(
                                     viewModel.saveClothes { success, errorMessage ->
                                         coroutineScope.launch {
                                             if (success) {
+                                                navigator.navigate(NavigationRoutes.Wardrobe)
                                                 snackbarHostState.showSnackbar(
                                                     message = StringConstants.clothesSuccesfly,
                                                     actionLabel = StringConstants.success,
                                                     duration = SnackbarDuration.Short
                                                 )
                                                 viewModel.clearSelection()
+
                                             } else {
                                                 snackbarHostState.showSnackbar(
                                                     message = "Hata: $errorMessage",
