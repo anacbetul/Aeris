@@ -74,6 +74,11 @@ class StringConstants {
         const val users="users"
         const val clothes="clothes"
         const val dontHaveClothes="You dont have any clothes"
+        const val connectionError="Connection Error"
+        const val connectionErrorMessage="No internet connection. Please check your connection."
+        const val retry="Retry"
+        const val exitApp="Exit App"
+        const val checkConnection="Checking connection..."
 
 
 
