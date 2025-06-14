@@ -45,9 +45,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -70,45 +72,46 @@ fun Wardrobe(
     var selectedClothes by remember { mutableStateOf<Clothes?>(null) }
 
 
-    if (selectedClothes != null && showDetailSheet.value == true) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                showDetailSheet.value = false
-                selectedClothes = null
-            },
-            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            containerColor = MaterialTheme.colorScheme.background,
+
+    if (isLoading && clothesByCategory.values.all { it.isEmpty() }) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.7f)  // ekranın %70'i kadar yükseklik
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                ClothesDetailContent(clothes = selectedClothes!!) {
-                    viewModel.deleteClothes(selectedClothes!!.id)
-                    showDetailSheet.value = false
+            CircularProgressIndicator()
+        }
+
+    } else {
+        SwipeRefresh(
+            state = swipeRefreshState,
+            onRefresh = {
+                viewModel.refresh()
+            },
+        ) {
+            if (selectedClothes != null && showDetailSheet.value) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showDetailSheet.value = false
+                        selectedClothes = null
+                    },
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                    containerColor = MaterialTheme.colorScheme.background,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.7f)  // ekranın %70'i kadar yükseklik
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        ClothesDetailContent(clothes = selectedClothes!!) {
+                            viewModel.deleteClothes(selectedClothes!!.id)
+                            showDetailSheet.value = false
+                        }
+                    }
                 }
             }
-        }
-    }
 
-
-    SwipeRefresh(
-        state = swipeRefreshState,
-        onRefresh = {
-            viewModel.refresh()  // ViewModel'deki refresh fonksiyonunu çağır
-        },
-    ) {
-        if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
             val isClothesEmpty = clothesByCategory.values.all { it.isEmpty() }
             if (isClothesEmpty) {
                 LazyColumn(
@@ -134,7 +137,8 @@ fun Wardrobe(
                             item {
                                 BodyText(
                                     text = category,
-                                    modifier = Modifier.padding(bottom = 8.dp)
+                                    modifier = Modifier.padding(bottom = 8.dp),
+                                    textColor = MaterialTheme.colorScheme.tertiary
                                 )
                             }
 
@@ -170,36 +174,24 @@ fun Wardrobe(
                                 item {
                                     Divider(
                                         modifier = Modifier.padding(vertical = 12.dp),
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                        color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.7f),
                                         thickness = 1.dp
                                     )
                                 }
                             }
                         }
                     }
-
                 }
             }
         }
-
     }
 }
+
 
 @Composable
 fun ClothesCard(clothes: Clothes, onClick: () -> Unit) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val cardSize = screenWidth / 5
-
-
-//            Card(
-//                modifier = Modifier
-//                    .width(cardSize)
-//                    .aspectRatio(1f),
-////                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-//                shape = RoundedCornerShape(8.dp),
-//                elevation = CardDefaults.cardElevation(2.dp),
-//                onClick = onClick
-//            ) {
     Box(
         modifier = Modifier
             .width(cardSize)
@@ -207,19 +199,17 @@ fun ClothesCard(clothes: Clothes, onClick: () -> Unit) {
             .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() }
     ) {
-        // Arka plan: bulanık + transparan
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .background(Color.White.copy(alpha = 0.2f))
-                .blur(16.dp) // sadece bu kutu bulanık
+                .blur(16.dp)
         )
 
-        // Ön plan: Görsel net şekilde üstte yer alır
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(4.dp) // kenarlardan biraz içe al
+                .padding(4.dp)
                 .clip(RoundedCornerShape(16.dp))
         ) {
             if (!clothes.photoPath.isNullOrEmpty()) {
@@ -251,9 +241,10 @@ fun ClothesDetailContent(clothes: Clothes, onDeleteClick: () -> Unit) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(modifier = Modifier
-            .align(Alignment.End)
-            .clickable { onDeleteClick() }) {
+        Row(
+            modifier = Modifier
+                .align(Alignment.End)
+                .clickable { onDeleteClick() }) {
             Icon(
                 imageVector = Icons.Filled.Delete,
                 contentDescription = "My Location",
@@ -266,16 +257,43 @@ fun ClothesDetailContent(clothes: Clothes, onDeleteClick: () -> Unit) {
         if (!clothes.photoPath.isNullOrEmpty()) {
             Image(
                 painter = rememberAsyncImagePainter(clothes.photoPath),
-                contentDescription = null,
+                contentDescription = "Selected Clothes",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 200.dp)
+                    .heightIn(max = 400.dp)
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        BodyText(text = "${StringConstants.category}: ${clothes.type}", textColor = MaterialTheme.colorScheme.tertiary)
-        BodyText(text = "${StringConstants.addedOn} ${clothes.dateAdded}", textColor = MaterialTheme.colorScheme.tertiary)
-        BodyText(text = "${StringConstants.suitableCondition} ${clothes.suitableWeather}", textColor = MaterialTheme.colorScheme.tertiary)
+        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(32.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                BodyText(
+                    text = "${StringConstants.category}: ${clothes.type}",
+                    textColor = MaterialTheme.colorScheme.tertiary
+                )
+                BodyText(
+                    text = "${StringConstants.suitableCondition} ${
+                        clothes.suitableWeather.joinToString(
+                            ", "
+                        )
+                    }",
+                    textColor = MaterialTheme.colorScheme.tertiary
+                )
+                BodyText(
+                    text = "${StringConstants.addedOn} ${clothes.dateAdded}",
+                    textColor = MaterialTheme.colorScheme.tertiary,
+                    fontSize = 12.sp
+                )
+            }
+        }
     }
 }
 
