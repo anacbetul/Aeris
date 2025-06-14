@@ -34,14 +34,13 @@ import com.luci.aeris.utils.components.AirisAlertDialog
 fun Profile(
     navigator: Navigator,
     viewModel: ProfileViewModel = hiltViewModel(),
-            themeViewModel: ThemeViewModel
+    themeViewModel: ThemeViewModel
 ) {
     var expanded by remember { mutableStateOf(false) }
     val isDarkMode by themeViewModel.isDarkTheme.collectAsState()
     var selectedGender by remember { mutableStateOf("") }
     val user = viewModel.user
     val isLoading = viewModel.isLoading
-    val scope = rememberCoroutineScope()
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -50,6 +49,13 @@ fun Profile(
         val currentUser = viewModel.authRepository.currentUser
         currentUser?.uid?.let { uid ->
             viewModel.loadUser(uid)
+        }
+    }
+
+    // Kullanıcı geldikten sonra selectedGender'ı set et
+    LaunchedEffect(user) {
+        if (selectedGender.isEmpty()) {
+            selectedGender = user?.gender ?: ""
         }
     }
 
@@ -138,15 +144,19 @@ fun Profile(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                       BodyText(text = StringConstants.selectGender)
+                        BodyText(text = StringConstants.selectGender)
                         GenderDropdownMenu(
-                            selectedGender = user?.gender?:"Other",
+                            selectedGender = selectedGender,
                             onGenderSelected = { selectedGender = it }
                         )
                     }
 
                     Button(
-                        onClick = {  viewModel.updateUserGender(selectedGender) },
+                        onClick = {
+                            if (selectedGender.isNotBlank()) {
+                                viewModel.updateUserGender(selectedGender)
+                            }
+                        },
                         modifier = Modifier.align(Alignment.End),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                     ) {
@@ -163,7 +173,7 @@ fun Profile(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 BodyText(StringConstants.darkMode)
-                Switch(checked = isDarkMode,  onCheckedChange = {
+                Switch(checked = isDarkMode, onCheckedChange = {
                     themeViewModel.toggleTheme()
                 })
             }
@@ -175,7 +185,7 @@ fun Profile(
 
         Row(modifier = Modifier.align(Alignment.End)) {
             Button(
-                onClick = { showLogoutDialog = true }, // <-- dialog göster
+                onClick = { showLogoutDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {
                 BodyText(StringConstants.exit, textColor = MaterialTheme.colorScheme.onPrimary)
@@ -184,16 +194,19 @@ fun Profile(
             Spacer(modifier = Modifier.width(8.dp))
 
             TextButton(onClick = {
-
                 showDeleteDialog = true
             }) {
-                BodyText(StringConstants.deleteAccount, fontSize = 12.sp, textColor = MaterialTheme.colorScheme.error)
+                BodyText(
+                    StringConstants.deleteAccount,
+                    fontSize = 12.sp,
+                    textColor = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
 
     if (showLogoutDialog) {
-        AirisAlertDialog (
+        AirisAlertDialog(
             title = StringConstants.exit,
             message = StringConstants.confirmExit,
             confirmText = StringConstants.signOut,
@@ -205,6 +218,7 @@ fun Profile(
             onDismiss = { showLogoutDialog = false }
         )
     }
+
     if (showDeleteDialog) {
         AirisAlertDialog(
             title = StringConstants.deleteTitle,
@@ -220,9 +234,6 @@ fun Profile(
     }
 }
 
-
-
-
 @Composable
 fun GenderDropdownMenu(
     selectedGender: String,
@@ -232,8 +243,11 @@ fun GenderDropdownMenu(
     val genders = listOf(StringConstants.woman, StringConstants.man, StringConstants.other)
 
     Box {
-        TextButton(onClick = { expanded = true }, colors = ButtonDefaults.textButtonColors()) {
-            BodyText(text = selectedGender.ifEmpty { StringConstants.selectGender}, textColor = MaterialTheme.colorScheme.primary)
+        TextButton(onClick = { expanded = true }) {
+            BodyText(
+                text = selectedGender.ifEmpty { StringConstants.selectGender },
+                textColor = MaterialTheme.colorScheme.primary
+            )
         }
 
         DropdownMenu(
