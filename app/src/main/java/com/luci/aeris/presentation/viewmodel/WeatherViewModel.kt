@@ -1,7 +1,6 @@
 package com.luci.aeris.presentation.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luci.aeris.data.mapper.toCurrentCondition
@@ -21,6 +20,8 @@ import javax.inject.Inject
 class WeatherViewModel @Inject constructor(
     private val repository: WeatherRepository
 ) : ViewModel() {
+
+    val weatherStateForOutfitViewModel = repository.getWeatherState()
 
     private val _weatherState = MutableStateFlow<List<Weather>>(emptyList())
     val weatherState: StateFlow<List<Weather>> = _weatherState.asStateFlow()
@@ -60,17 +61,19 @@ class WeatherViewModel @Inject constructor(
 
     init {
         loadWeather(location.value, unitGroup.value)
+
     }
 
     fun loadWeather(location: String, unitGroup: String, useCurrentLocation: Boolean = false) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                val queryLocation = if (useCurrentLocation && !_currentLocation.value.isNullOrEmpty()) {
-                    _currentLocation.value!!
-                } else {
-                    location
-                }
+                val queryLocation =
+                    if (useCurrentLocation && !_currentLocation.value.isNullOrEmpty()) {
+                        _currentLocation.value!!
+                    } else {
+                        location
+                    }
                 val response = repository.getWeatherResponse(queryLocation, unitGroup)
                 val resolvedAddress = response.resolvedAddress ?: ""
                 val current = response.currentConditions?.toCurrentCondition(resolvedAddress)
@@ -83,7 +86,14 @@ class WeatherViewModel @Inject constructor(
                     weatherList.add(0, it.toWeather())
                 }
                 _weatherState.value = weatherList
-                _selectedDay.value = weatherList.firstOrNull()
+
+
+                val currentSelected = _selectedDay.value
+                val newSelection = weatherList.find { it.datetime == currentSelected?.datetime }
+                    ?: weatherList.firstOrNull()
+                _selectedDay.value = newSelection
+
+//                _selectedDay.value = weatherList.firstOrNull()
                 _isLoading.value = false
             } catch (e: Exception) {
                 _error.value = e.message

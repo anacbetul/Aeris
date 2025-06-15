@@ -110,7 +110,7 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
             _detectedType.value = predictedLabel
 
             _suitableConditions.value = when (predictedLabel.lowercase()) {
-                "caps", "sunglasses", "t-shirt", "shirt", "short", "sandals" -> listOf("Hot", "Sunnt")
+                "caps", "sunglasses", "t-shirt", "shirt", "short", "sandals" -> listOf("Hot", "Sunny")
                 "hoodie", "sweter", "pant", "tracksuit" -> listOf("Warm", "Cool")
                 "coat", "denimcoat", "jacket", "raincoat" -> listOf("Cold", "Windy", "Rainy")
                 "winter beret" -> listOf("Cold", "Snowy")
@@ -119,7 +119,7 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
                 else -> emptyList()
             }
 
-            _isLoading.value = false // Yükleme tamamlandı
+            _isLoading.value = false
         }
     }
 

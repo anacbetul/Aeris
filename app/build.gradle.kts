@@ -9,6 +9,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("com.google.gms.google-services")
+    id("kotlin-kapt")
 }
 val localProperties = Properties().apply {
     load(File(rootDir, "local.properties").inputStream())
@@ -104,7 +105,8 @@ dependencies {
     implementation("androidx.hilt:hilt-work:1.2.0")
     implementation("androidx.work:work-runtime-ktx:2.10.1")
     implementation("com.google.dagger:hilt-android:2.56.2")
-    ksp("com.google.dagger:hilt-android-compiler:2.56.2")
+    kapt("com.google.dagger:hilt-compiler:2.56.2")
+//    ksp("com.google.dagger:hilt-android-compiler:2.56.2")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.13.0"))

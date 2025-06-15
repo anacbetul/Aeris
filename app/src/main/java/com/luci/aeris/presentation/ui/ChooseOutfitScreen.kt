@@ -21,23 +21,57 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.luci.aeris.R
+import com.luci.aeris.presentation.viewmodel.ChooseOutfitViewModel
+import com.luci.aeris.presentation.viewmodel.WardrobeViewmodel
+import com.luci.aeris.presentation.viewmodel.WeatherViewModel
 import com.luci.aeris.utils.navigator.Navigator
 
 @Composable
-fun ChooseOutfitScreen(navigator: Navigator) {
-    var rowCount: Int = 6
-    var cardCount: Int = 10
+fun ChooseOutfitScreen(
+    navigator: Navigator,
+    wardrobeViewModel: WardrobeViewmodel = viewModel(),
+    weatherViewModel: WeatherViewModel = hiltViewModel(),
+    chooseOutfitViewModel: ChooseOutfitViewModel = hiltViewModel()
+) {
+//    val chooseOutfitViewModel: ChooseOutfitViewModel = hiltViewModel()
+    val recommendCategories = chooseOutfitViewModel.recommendedCategories.collectAsState().value
+    val clothesByCategory = wardrobeViewModel.clothesByCategory.collectAsState().value
+    val selectedDay by weatherViewModel.selectedDay.collectAsState()
+    val filteredClothesByCategory = clothesByCategory.filterKeys { it in recommendCategories }
+
+    LaunchedEffect(selectedDay) {
+        selectedDay?.let {
+            chooseOutfitViewModel.updateRecommendations(it.temp)
+        }}
+//    LaunchedEffect(Unit) {
+//        chooseOutfitViewModel.observeSelectedDay(weatherViewModel.selectedDay)
+//    }
+
+
+    var rowCount: Int = recommendCategories.size
+    var cardCount: Int = filteredClothesByCategory.size
+
     Column(modifier = Modifier.fillMaxSize()) {
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        ItemCard(10, 10)
+        Text("${selectedDay?.datetime} \n${recommendCategories}")
+        filteredClothesByCategory.forEach { (category, clothes) ->
+            Text(text = "Kategori: $category") // örnek olarak göstermek için
+        }
+        ItemCard(1, 1)
 
     }
 }
@@ -46,8 +80,8 @@ fun ChooseOutfitScreen(navigator: Navigator) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ItemCard(
-    rowCount: Int = 10,
-    cardCount: Int = 10
+    rowCount: Int = 5,
+    cardCount: Int = 5
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
