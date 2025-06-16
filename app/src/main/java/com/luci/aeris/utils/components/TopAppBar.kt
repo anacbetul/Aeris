@@ -1,11 +1,13 @@
 package com.luci.aeris.utils.components
 
 import BodyText
+import android.R.attr.textColor
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -41,12 +43,13 @@ fun AppBar(
     val currentRoute = currentBackStackEntry.value?.destination?.route
 
     val isProfileScreen = currentRoute == NavigationRoutes.Profile
+    val isChooseOutfitScreen = currentRoute == NavigationRoutes.ChooseOutfit
 
     CenterAlignedTopAppBar(
         title = {
             BodyText(
                 StringConstants.title,
-                textAlign = TextAlign.Center, fontSize = 24.sp,
+                textAlign = TextAlign.Center, fontSize = 32.sp,
                 textColor = MaterialTheme.colorScheme.onPrimary
             )
         },
@@ -56,10 +59,18 @@ fun AppBar(
                     navController.popBackStack()
                 }) {
                     Icon(
-                        imageVector = Icons.Outlined.ArrowBack,
+                        imageVector = Icons.Filled.ArrowBackIosNew,
                         contentDescription = "Back",
-
                     )
+                }
+            }else if (isChooseOutfitScreen) {
+                IconButton(onClick = {
+                    navController.popBackStack()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBackIosNew,
+                        contentDescription = "Back",
+                        )
                 }
             }
         },

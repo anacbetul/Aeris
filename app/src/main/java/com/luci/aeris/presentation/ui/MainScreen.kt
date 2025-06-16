@@ -29,9 +29,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -77,7 +81,8 @@ fun MainScreen(navigator: Navigator) {
     val isRefreshing by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val location by viewModel.location.collectAsState()
-    var unitGroup by remember { mutableStateOf("metric") }
+    val unitGroup by viewModel.unitGroup.collectAsState()
+//    var unitGroup by remember { mutableStateOf("metric") }
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isRefreshing)
     val recommendCategories by chooseOutfitViewModel.recommendedCategories.collectAsState()
     val clothesByCategory = wardrobeViewModel.clothesByCategory.collectAsState().value
@@ -85,10 +90,16 @@ fun MainScreen(navigator: Navigator) {
 
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val cardSize = screenWidth / 2
+    val cardHeight = cardSize // zaten kare olduğu için cardSize
+    val spacing = 12.dp
+    val rowCount = (recommendCategories.size + 1) / 2 // 2 sütun olduğu için
+    val gridHeight = (cardHeight + spacing) * rowCount
+
     LaunchedEffect(Unit) {
         wardrobeViewModel.refresh()
         chooseOutfitViewModel.observeSelectedDay(
             selectedDay = viewModel.selectedDay,
+            unitGroup = unitGroup,
             clothesFlow = wardrobeViewModel.clothesByCategory
         )
     }
@@ -100,12 +111,6 @@ fun MainScreen(navigator: Navigator) {
         },
         modifier = Modifier.fillMaxSize(),
     ) {
-
-//        LaunchedEffect(selectedDay, clothesByCategory) {
-//            selectedDay?.let {
-//                chooseOutfitViewModel.updateRecommendations(it.temp)
-//            }
-//        }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(8.dp),
@@ -119,9 +124,9 @@ fun MainScreen(navigator: Navigator) {
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(500.dp), // sabit yükseklik VERMEN LAZIM
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        .height(cardHeight * 2), // sabit yükseklik VERMEN LAZIM
+                    verticalArrangement = Arrangement.spacedBy(spacing),
+                    horizontalArrangement = Arrangement.spacedBy(spacing),
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(recommendCategories.size) { index ->
@@ -162,11 +167,6 @@ fun MainScreen(navigator: Navigator) {
                                             contentScale = ContentScale.Crop
                                         )
 
-                                        Text(
-                                            text = "Kategori: $category",
-                                            style = MaterialTheme.typography.titleSmall
-                                        )
-
                                     } else {
                                         Text(text = "Bu kategoride kıyafet yok.")
                                     }
@@ -175,6 +175,23 @@ fun MainScreen(navigator: Navigator) {
                         }
                     }
                 }
+            }
+            item {
+                Button(
+                    onClick = {
+                        navigator.navigate("choose_outfit?categories=${recommendCategories.joinToString(",")}")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.background
+                    )
+                ) {
+                    Text("Show Suggested Outfits")
+                }
+
             }
         }
     }

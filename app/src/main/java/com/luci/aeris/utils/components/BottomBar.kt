@@ -49,11 +49,10 @@ fun BottomNavigationBar(navController: NavController) {
     val currentRoute = currentBackStackEntry.value?.destination?.route
 
     val isProfileScreen = currentRoute == NavigationRoutes.Profile
+    val isChooseOutfitScreen = currentRoute == NavigationRoutes.ChooseOutfit
 
 
-    if(isProfileScreen) {
-        Box(modifier = Modifier.background(color = Color.White))
-    } else {
+    if(!isProfileScreen && !isChooseOutfitScreen){
         NavigationBar(
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 10.dp)

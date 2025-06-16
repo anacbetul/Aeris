@@ -55,6 +55,10 @@ class WeatherViewModel @Inject constructor(
         _selectedDay.value = weather
     }
 
+    fun setUnitGroup(newUnit: String) {
+        _unitGroup.value = newUnit
+    }
+
     fun changeLocation(newLocation: String) {
         _location.value = newLocation
     }

@@ -7,8 +7,9 @@ object NavigationRoutes {
     const val Register = "register"
 
     const val Main = "main"
-    const val ChooseOutfit = "choose_outfit"
+    const val ChooseOutfitBase = "choose_outfit"
     const val AddClothes = "add_clothes"
     const val Wardrobe = "wardrobe"
     const val Profile = "profile"
+    const val ChooseOutfit = "choose_outfit?categories={categories}"
 }

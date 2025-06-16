@@ -2,12 +2,15 @@ package com.luci.aeris.utils.navigator
 
 import AuthLayout
 import MainLayout
+import android.R.attr.type
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.domain.repository.FirebaseAuthState
 import com.luci.aeris.presentation.ui.AddClothes
@@ -53,11 +56,33 @@ fun AppNavGraph(
                 MainScreen(navigator = navigator)
             }
         }
-        composable(NavigationRoutes.ChooseOutfit) {
+//        composable(NavigationRoutes.ChooseOutfit) {
+//            MainLayout(navHostController, navigator) {
+//                ChooseOutfitScreen(navigator = navigator)
+//            }
+//        }
+
+        composable(
+            route = "choose_outfit?categories={categories}",
+            arguments = listOf(
+                navArgument("categories") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = ""
+                }
+            )
+        ) { backStackEntry ->
+            val uri = backStackEntry.arguments?.getString("categories") ?: ""
+
             MainLayout(navHostController, navigator) {
-                ChooseOutfitScreen(navigator = navigator)
+                ChooseOutfitScreen(
+                    navigator = navigator,
+                    categories = uri
+                )
             }
         }
+
+
         composable(NavigationRoutes.AddClothes) {
             MainLayout(navHostController, navigator) {
                 AddClothes(navigator = navigator)

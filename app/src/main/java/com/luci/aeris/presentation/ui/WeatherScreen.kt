@@ -103,7 +103,8 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
     val currentWeather by viewModel.currentWeather.collectAsState()
     var location by remember { mutableStateOf("") }
     val effectiveLocation = if (location.isNotBlank()) location else "istanbul"
-    var unitGroup by remember { mutableStateOf("metric") }
+    val unitGroup by viewModel.unitGroup.collectAsState()
+//    var unitGroup by remember { mutableStateOf("metric") }
     val showLocationSheet = remember { mutableStateOf(false) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var useCurrentLocation by remember { mutableStateOf(true) }
@@ -176,7 +177,7 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
             expanded = expanded,
             onExpandedChange = { expanded = it },
             unitGroup = unitGroup,
-            onUnitChange = { unitGroup = it },
+            onUnitChange = { viewModel.setUnitGroup(it) },
             showLocationSheet = showLocationSheet.value,
             location = location,
             onReloadClick = { viewModel.loadWeather(effectiveLocation, unitGroup) },
@@ -255,10 +256,11 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                     fontSize = 12.sp,
                     textColor = MaterialTheme.colorScheme.tertiary
                 )
-
             }
         }
-
+    }
+    LaunchedEffect(unitGroup) {
+        viewModel.loadWeather(effectiveLocation, unitGroup)
     }
     LaunchedEffect(Unit) {
         if (locationPermissionState.status.isGranted && useCurrentLocation) {

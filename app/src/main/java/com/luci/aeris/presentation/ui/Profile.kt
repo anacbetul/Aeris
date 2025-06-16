@@ -82,7 +82,6 @@ fun Profile(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Kullanıcı Bilgileri (TAMAMEN GÖRÜNÜR)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
