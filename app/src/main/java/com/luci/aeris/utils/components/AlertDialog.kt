@@ -30,6 +30,7 @@ fun AirisAlertDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = Color.White,
         title = {
             BodyText(
                 text = title,

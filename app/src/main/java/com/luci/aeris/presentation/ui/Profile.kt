@@ -184,9 +184,8 @@ fun Profile(
         Spacer(modifier = Modifier.height(32.dp))
 
         Row(modifier = Modifier.align(Alignment.End)) {
-            Button(
+            OutlinedButton { }(
                 onClick = { showLogoutDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {
                 BodyText(StringConstants.exit, textColor = MaterialTheme.colorScheme.onPrimary)
             }

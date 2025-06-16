@@ -282,7 +282,7 @@ fun AddClothes(
                         onDismissRequest = { showBottomSheet = false },
                         sheetState = sheetState,
                         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                        containerColor = colorscheme.surface
+                        containerColor = Color.White
                     ) {
                         Column(
                             modifier = Modifier
