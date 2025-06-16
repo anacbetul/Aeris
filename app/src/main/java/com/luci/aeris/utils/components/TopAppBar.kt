@@ -71,7 +71,7 @@ fun AppBar(
                     Icon(
                         imageVector = Icons.Outlined.AccountCircle,
                         contentDescription = "Profile",
-  
+
                     )
                 }
             }

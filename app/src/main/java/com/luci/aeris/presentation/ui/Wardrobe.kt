@@ -3,6 +3,8 @@ package com.luci.aeris.presentation.ui
 import BodyText
 import Clothes
 import android.R.attr.text
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,6 +60,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.luci.aeris.R
 import com.luci.aeris.presentation.viewmodel.WardrobeViewmodel
+import com.luci.aeris.utils.CameraGalleryManager
 import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.utils.navigator.Navigator
 
@@ -71,6 +75,7 @@ fun Wardrobe(
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
     val showDetailSheet = remember { mutableStateOf(false) }
     var selectedClothes by remember { mutableStateOf<Clothes?>(null) }
+
 
     LaunchedEffect(Unit) {
         viewModel.refresh()

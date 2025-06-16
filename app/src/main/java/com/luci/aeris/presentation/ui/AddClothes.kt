@@ -2,7 +2,6 @@ package com.luci.aeris.presentation.ui
 
 import BodyText
 import android.Manifest
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -30,6 +29,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.luci.aeris.utils.navigator.Navigator
 import com.luci.aeris.presentation.viewmodel.AddClothesViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.luci.aeris.utils.CameraGalleryManager
 import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.utils.constants.StringConstants
 import kotlinx.coroutines.launch
@@ -45,7 +45,7 @@ fun AddClothes(
     val coroutineScope = rememberCoroutineScope()
 
     val isLoading by viewModel.isLoading.collectAsState()
-    val isSaving by viewModel.isSaving.collectAsState() // Yeni eklendi
+    val isSaving by viewModel.isSaving.collectAsState()
     val selectedImageUri by viewModel.selectedImageUri.collectAsState()
     val backgroundRemovedBitmap by viewModel.backgroundRemovedBitmap.collectAsState()
     val hasCameraPermission by viewModel.hasCameraPermission.collectAsState()
@@ -61,7 +61,6 @@ fun AddClothes(
         java.text.SimpleDateFormat(StringConstants.dateFormat, java.util.Locale.getDefault()).format(java.util.Date())
     }
 
-    // Launchers
     val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             viewModel.setSelectedImage(viewModel.cameraImageUri.value!!)
@@ -74,47 +73,59 @@ fun AddClothes(
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         viewModel.updateCameraPermission(granted)
-        if (granted) {
-            val uri = viewModel.cameraImageUri.value ?: createImageUri(context).also { viewModel.setCameraImageUri(it) }
-            takePictureLauncher.launch(uri)
-        }
     }
 
     val galleryPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         viewModel.updateGalleryPermission(granted)
-        if (granted) {
-            pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-        }
+    }
+
+    val cameraGalleryManager = remember {
+        CameraGalleryManager(
+            context = context,
+            pickImageLauncher = pickImageLauncher,
+            takePictureLauncher = takePictureLauncher,
+            requestCameraPermission = {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            },
+            requestGalleryPermission = {
+                val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                    Manifest.permission.READ_MEDIA_IMAGES
+                else Manifest.permission.READ_EXTERNAL_STORAGE
+                galleryPermissionLauncher.launch(permission)
+            },
+            showSettingsSnackbar = { message ->
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            },
+            setCameraImageUri = { uri ->
+                viewModel.setCameraImageUri(uri)
+            },
+            createImageUri = {
+
+                createImageUri(context)
+            }
+        )
     }
 
     Scaffold(
         snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState,
-                snackbar = { data ->
-                    val isError = data.visuals.actionLabel == StringConstants.error
-                    Snackbar(
-                        containerColor = if (isError) colorscheme.errorContainer else colorscheme.primaryContainer,
-                        contentColor = if (isError) colorscheme.onErrorContainer else colorscheme.onPrimaryContainer,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = if (isError) Icons.Default.Error else Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                tint = if (isError) colorscheme.error else colorscheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            BodyText(text = data.visuals.message)
-                        }
-                    }
-                }
-            )
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    shape = RoundedCornerShape(16.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    actionColor = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                )
+            }
         }
     ) { paddingValues ->
 
@@ -139,10 +150,9 @@ fun AddClothes(
                         backgroundRemovedBitmap != null -> {
                             Image(
                                 bitmap = backgroundRemovedBitmap!!.asImageBitmap(),
-                                contentDescription = StringConstants.pickedImage,
+                                contentDescription = null,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(Color.Transparent)
                                     .clip(RoundedCornerShape(20.dp)),
                                 contentScale = ContentScale.Fit
                             )
@@ -150,10 +160,9 @@ fun AddClothes(
                         selectedImageUri != null -> {
                             Image(
                                 painter = rememberAsyncImagePainter(selectedImageUri),
-                                contentDescription = StringConstants.pickedImage,
+                                contentDescription = null,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(Color.Transparent)
                                     .clip(RoundedCornerShape(20.dp)),
                                 contentScale = ContentScale.Fit
                             )
@@ -172,7 +181,7 @@ fun AddClothes(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.AddAPhoto,
-                                        contentDescription = StringConstants.addAPhoto,
+                                        contentDescription = null,
                                         tint = colorscheme.onSurfaceVariant,
                                         modifier = Modifier.size(40.dp)
                                     )
@@ -196,16 +205,11 @@ fun AddClothes(
                 }
 
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (detectedType != null) {
-                        BodyText(
-                            text = StringConstants.clotheDetail,
-                            fontWeight = FontWeight.W700
-                        )
+                        BodyText(text = StringConstants.clotheDetail, fontWeight = FontWeight.W700)
                         Divider()
                         Text(text = "${StringConstants.addedOn} $currentDate")
                         Text(text = "${StringConstants.category}: $detectedType")
@@ -216,63 +220,48 @@ fun AddClothes(
                 }
 
                 if (selectedImageUri != null && detectedType != null) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.saveClothes { success, errorMessage ->
-                                        coroutineScope.launch {
-                                            if (success) {
-                                                navigator.navigate(
-                                                    route = NavigationRoutes.Wardrobe,
-                                                    popUpTo = NavigationRoutes.AddClothes,
-                                                    inclusive = true
-                                                )
-                                                snackbarHostState.showSnackbar(
-                                                    message = StringConstants.clothesSuccesfly,
-                                                    actionLabel = StringConstants.success,
-                                                    duration = SnackbarDuration.Short
-                                                )
-                                                viewModel.clearSelection()
-
-                                            } else {
-                                                snackbarHostState.showSnackbar(
-                                                    message = "Hata: $errorMessage",
-                                                    actionLabel = StringConstants.error,
-                                                    duration = SnackbarDuration.Short
-                                                )
-                                            }
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.saveClothes { success, errorMessage ->
+                                    coroutineScope.launch {
+                                        if (success) {
+                                            navigator.navigate(
+                                                route = NavigationRoutes.Wardrobe,
+                                                popUpTo = NavigationRoutes.AddClothes,
+                                                inclusive = true
+                                            )
+                                            snackbarHostState.showSnackbar(
+                                                message = StringConstants.clothesSuccesfly,
+                                                actionLabel = StringConstants.success
+                                            )
+                                            viewModel.clearSelection()
+                                        } else {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Hata: $errorMessage",
+                                                actionLabel = StringConstants.error
+                                            )
                                         }
                                     }
-                                },
-                                enabled = !isSaving // Kayıt yapılırken butonu devre dışı bırak
-                            ) {
-                                if (isSaving) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                } else {
-                                    BodyText(StringConstants.save)
                                 }
+                            },
+                            enabled = !isSaving
+                        ) {
+                            if (isSaving) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                BodyText(StringConstants.save)
                             }
+                        }
 
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.clearSelection()
-                                }
-                            ) {
-                                BodyText(StringConstants.deleteCancel)
-                            }
+                        OutlinedButton(onClick = { viewModel.clearSelection() }) {
+                            BodyText(StringConstants.deleteCancel)
                         }
                     }
                 }
@@ -294,46 +283,24 @@ fun AddClothes(
 
                             OutlinedButton(
                                 onClick = {
-                                    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                                        Manifest.permission.READ_MEDIA_IMAGES
-                                    else
-                                        Manifest.permission.READ_EXTERNAL_STORAGE
-
-                                    val permissionStatus = androidx.core.content.ContextCompat.checkSelfPermission(context, permission)
-
-                                    if (permissionStatus == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                                        pickImageLauncher.launch(
-                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                        )
-                                    } else {
-                                        galleryPermissionLauncher.launch(permission)
-                                    }
-
+                                    cameraGalleryManager.openGallery(hasGalleryPermission)
                                     showBottomSheet = false
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Icon(Icons.Default.PhotoLibrary, contentDescription = null, Modifier.size(20.dp), tint = Color.Gray)
+                                Icon(Icons.Default.PhotoLibrary, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 BodyText(StringConstants.selectGallery)
                             }
 
                             OutlinedButton(
                                 onClick = {
-                                    if (hasCameraPermission) {
-                                        val uri = createImageUri(context)
-                                        viewModel.setCameraImageUri(uri)
-                                        takePictureLauncher.launch(uri)
-                                    } else {
-                                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                                    }
+                                    cameraGalleryManager.openCamera(hasCameraPermission)
                                     showBottomSheet = false
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Icon(Icons.Default.CameraAlt, contentDescription = null, Modifier.size(20.dp), tint = Color.Gray)
+                                Icon(Icons.Default.CameraAlt, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 BodyText(StringConstants.takePhoto)
                             }
@@ -345,7 +312,6 @@ fun AddClothes(
     }
 }
 
-// Ayrı bir utils dosyasına alınabilir
 fun createImageUri(context: android.content.Context): Uri {
     val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
     val contentValues = android.content.ContentValues().apply {

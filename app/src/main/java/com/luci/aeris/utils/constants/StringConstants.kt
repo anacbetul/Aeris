@@ -79,5 +79,7 @@ class StringConstants {
         const val retry = "Retry"
         const val exitApp = "Exit App"
         const val checkConnection = "Checking connection..."
+        const val cameraDenied="Camera permission denied. Please enable it from settings."
+        const val galleryDenied="Gallery permission denied. Please enable it from settings."
     }
 }
