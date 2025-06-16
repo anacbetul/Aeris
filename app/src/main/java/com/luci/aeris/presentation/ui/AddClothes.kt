@@ -53,6 +53,7 @@ fun AddClothes(
     val detectedType by viewModel.detectedType.collectAsState()
     val suitableConditions by viewModel.suitableConditions.collectAsState()
     val colorscheme = MaterialTheme.colorScheme
+    lateinit var cameraGalleryManager: CameraGalleryManager
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -70,16 +71,21 @@ fun AddClothes(
     val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let { viewModel.setSelectedImage(it) }
     }
-
     val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         viewModel.updateCameraPermission(granted)
+        if (granted) {
+            cameraGalleryManager.openCamera(true)
+        }
     }
 
     val galleryPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         viewModel.updateGalleryPermission(granted)
+        if (granted) {
+            cameraGalleryManager.openGallery(true)
+        }
     }
 
-    val cameraGalleryManager = remember {
+     cameraGalleryManager = remember {
         CameraGalleryManager(
             context = context,
             pickImageLauncher = pickImageLauncher,
@@ -110,6 +116,8 @@ fun AddClothes(
             }
         )
     }
+
+
 
     Scaffold(
         snackbarHost = {
