@@ -15,6 +15,7 @@ import com.luci.aeris.ConnectivityObserver
 import com.luci.aeris.utils.components.AppBar
 import com.luci.aeris.utils.navigator.Navigator
 import androidx.compose.runtime.getValue
+import com.luci.aeris.utils.constants.NavigationRoutes
 
 @Composable
 fun MainLayout(
@@ -39,7 +40,7 @@ fun MainLayout(
     val status by viewModel.networkStatus.collectAsState()
 
     Scaffold(
-        topBar = { AppBar() },
+        topBar = { AppBar(navigator=navigator, navController = navController) },
         bottomBar = { BottomNavigationBar(navController = navController) }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {

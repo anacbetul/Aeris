@@ -1,17 +1,10 @@
 package com.luci.aeris.presentation.ui
 
 import BodyText
-import android.R.attr.onClick
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,12 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.presentation.viewmodel.ThemeViewModel
-import com.luci.aeris.utils.navigator.Navigator
 import com.luci.aeris.presentation.viewmodel.ProfileViewModel
 import com.luci.aeris.utils.components.AirisAlertDialog
+import com.luci.aeris.utils.navigator.Navigator
 
 @Composable
 fun Profile(
@@ -36,7 +28,6 @@ fun Profile(
     viewModel: ProfileViewModel = hiltViewModel(),
     themeViewModel: ThemeViewModel
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val isDarkMode by themeViewModel.isDarkTheme.collectAsState()
     var selectedGender by remember { mutableStateOf("") }
     val user = viewModel.user
@@ -44,7 +35,6 @@ fun Profile(
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Kullanıcıyı ilk kez yükle
     LaunchedEffect(Unit) {
         val currentUser = viewModel.authRepository.currentUser
         currentUser?.uid?.let { uid ->
@@ -52,7 +42,6 @@ fun Profile(
         }
     }
 
-    // Kullanıcı geldikten sonra selectedGender'ı set et
     LaunchedEffect(user) {
         if (selectedGender.isEmpty()) {
             selectedGender = user?.gender ?: ""
@@ -93,98 +82,66 @@ fun Profile(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Kullanıcı Bilgileri (TAMAMEN GÖRÜNÜR)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .animateContentSize(animationSpec = tween(durationMillis = 100))
         ) {
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = !expanded }
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                BodyText(StringConstants.accountInfo)
-                Icon(
-                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = StringConstants.accountInfo
+            BodyText(
+                text = StringConstants.accountInfo,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = user?.email ?: StringConstants.emptyString,
+                onValueChange = {},
+                label = { BodyText(StringConstants.email) },
+                readOnly = true,
+                enabled = false,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = if (user?.password == StringConstants.emptyString)
+                    StringConstants.loggedGoogle else StringConstants.star,
+                onValueChange = {},
+                label = { BodyText(StringConstants.password) },
+                readOnly = true,
+                enabled = false,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BodyText(text = StringConstants.selectGender)
+                GenderDropdownMenu(
+                    selectedGender = selectedGender,
+                    onGenderSelected = {
+                        selectedGender = it ;
+                        if (selectedGender.isNotBlank()) {
+                        viewModel.updateUserGender(selectedGender)
+                    } }
                 )
             }
 
-            AnimatedVisibility(visible = expanded) {
-                Column {
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = user?.email ?: StringConstants.emptyString,
-                        onValueChange = {},
-                        label = { BodyText(StringConstants.email) },
-                        readOnly = true,
-                        enabled = false,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    OutlinedTextField(
-                        value = if (user?.password == StringConstants.emptyString)
-                            StringConstants.loggedGoogle else StringConstants.star,
-                        onValueChange = {},
-                        label = { BodyText(StringConstants.password) },
-                        readOnly = true,
-                        enabled = false,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        BodyText(text = StringConstants.selectGender)
-                        GenderDropdownMenu(
-                            selectedGender = selectedGender,
-                            onGenderSelected = { selectedGender = it }
-                        )
-                    }
-
-                    Button(
-                        onClick = {
-                            if (selectedGender.isNotBlank()) {
-                                viewModel.updateUserGender(selectedGender)
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.End),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                    ) {
-                        BodyText(StringConstants.edit, textColor = MaterialTheme.colorScheme.onPrimary)
-                    }
-                }
-            }
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                BodyText(StringConstants.darkMode)
-                Switch(checked = isDarkMode, onCheckedChange = {
-                    themeViewModel.toggleTheme()
-                })
-            }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Alt Butonlar
         Row(modifier = Modifier.align(Alignment.End)) {
-            OutlinedButton (
+            OutlinedButton(
                 onClick = { showLogoutDialog = true },
             ) {
                 BodyText(StringConstants.exit)
@@ -204,6 +161,7 @@ fun Profile(
         }
     }
 
+    // Çıkış Dialog
     if (showLogoutDialog) {
         AirisAlertDialog(
             title = StringConstants.exit,
@@ -218,6 +176,7 @@ fun Profile(
         )
     }
 
+    // Hesap Silme Dialog
     if (showDeleteDialog) {
         AirisAlertDialog(
             title = StringConstants.deleteTitle,

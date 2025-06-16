@@ -294,18 +294,21 @@ fun AddClothes(
 
                             OutlinedButton(
                                 onClick = {
-                                    if (hasGalleryPermission) {
+                                    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                        Manifest.permission.READ_MEDIA_IMAGES
+                                    else
+                                        Manifest.permission.READ_EXTERNAL_STORAGE
+
+                                    val permissionStatus = androidx.core.content.ContextCompat.checkSelfPermission(context, permission)
+
+                                    if (permissionStatus == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                                         pickImageLauncher.launch(
                                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                         )
                                     } else {
-                                        galleryPermissionLauncher.launch(
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                                                Manifest.permission.READ_MEDIA_IMAGES
-                                            else
-                                                Manifest.permission.READ_EXTERNAL_STORAGE
-                                        )
+                                        galleryPermissionLauncher.launch(permission)
                                     }
+
                                     showBottomSheet = false
                                 },
                                 modifier = Modifier.fillMaxWidth(),

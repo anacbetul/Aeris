@@ -35,6 +35,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,7 +72,9 @@ fun Wardrobe(
     val showDetailSheet = remember { mutableStateOf(false) }
     var selectedClothes by remember { mutableStateOf<Clothes?>(null) }
 
-
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
 
     if (isLoading && clothesByCategory.values.all { it.isEmpty() }) {
         Box(
@@ -132,7 +135,7 @@ fun Wardrobe(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    clothesByCategory.entries.forEachIndexed { index, (category, clothesList) ->
+                    clothesByCategory.entries.sortedBy { it.key }.forEachIndexed { index, (category, clothesList) ->
                         if (clothesList.isNotEmpty()) {
                             item {
                                 BodyText(
