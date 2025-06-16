@@ -1,5 +1,6 @@
 package com.luci.aeris.presentation.viewmodel
 
+import Clothes
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,14 +21,31 @@ class ChooseOutfitViewModel @Inject constructor(
     private val _recommendedCategories = MutableStateFlow<List<String>>(emptyList())
     val recommendedCategories: StateFlow<List<String>> = _recommendedCategories
 
-    fun observeSelectedDay(selectedDay: StateFlow<Weather?>) {
+    fun observeSelectedDay(
+        selectedDay: StateFlow<Weather?>,
+        clothesFlow: StateFlow<Map<String, List<Clothes>>>
+    ) {
         viewModelScope.launch {
-            selectedDay.collectLatest { weather ->
-                weather?.let {
-                    val categories = getCategoriesForTemperature(it.temp)
-                    _recommendedCategories.value = categories
+            combine(selectedDay, clothesFlow) { weather, clothes ->
+                if (weather != null) {
+                    val baseCategories = getCategoriesForTemperature(weather.temp)
+                    val existingCategories = baseCategories.filter { category ->
+                        clothes[category]?.isNotEmpty() == true
+                    }
+                    existingCategories
+                } else {
+                    emptyList()
                 }
+            }.collect { categories ->
+                _recommendedCategories.value = categories
             }
+
+//            selectedDay.collectLatest { weather ->
+//                weather?.let {
+//                    val categories = getCategoriesForTemperature(it.temp)
+//                    _recommendedCategories.value = categories
+//                }
+//            }
         }
     }
 
