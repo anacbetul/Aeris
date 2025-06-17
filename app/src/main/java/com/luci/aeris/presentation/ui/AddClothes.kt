@@ -1,7 +1,9 @@
 package com.luci.aeris.presentation.ui
 
 import BodyText
+import DashedDivider
 import android.Manifest
+import android.content.Context
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -11,9 +13,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.ChangeCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +37,10 @@ import com.luci.aeris.utils.CameraGalleryManager
 import com.luci.aeris.utils.constants.NavigationRoutes
 import com.luci.aeris.utils.constants.StringConstants
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,38 +62,53 @@ fun AddClothes(
     val suitableConditions by viewModel.suitableConditions.collectAsState()
     val colorscheme = MaterialTheme.colorScheme
     lateinit var cameraGalleryManager: CameraGalleryManager
+    var selectedCategory by remember { mutableStateOf<String?>(detectedType) }
+    var showCategorySheet by remember { mutableStateOf(false) }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
 
+    fun readLabelsFromAssets(context: Context): List<String> {
+        return context.assets.open("labels.txt").bufferedReader().useLines { it.toList() }
+    }
+
+    val labelList by remember {
+        mutableStateOf(readLabelsFromAssets(context))
+    }
+
     val currentDate = remember {
-        java.text.SimpleDateFormat(StringConstants.dateFormat, java.util.Locale.getDefault()).format(java.util.Date())
+        java.text.SimpleDateFormat(StringConstants.dateFormat, java.util.Locale.getDefault())
+            .format(java.util.Date())
     }
 
-    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success) {
-            viewModel.setSelectedImage(viewModel.cameraImageUri.value!!)
+    val takePictureLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success) {
+                viewModel.setSelectedImage(viewModel.cameraImageUri.value!!)
+            }
         }
-    }
 
-    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        uri?.let { viewModel.setSelectedImage(it) }
-    }
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        viewModel.updateCameraPermission(granted)
-        if (granted) {
-            cameraGalleryManager.openCamera(true)
+    val pickImageLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            uri?.let { viewModel.setSelectedImage(it) }
         }
-    }
-
-    val galleryPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        viewModel.updateGalleryPermission(granted)
-        if (granted) {
-            cameraGalleryManager.openGallery(true)
+    val cameraPermissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            viewModel.updateCameraPermission(granted)
+            if (granted) {
+                cameraGalleryManager.openCamera(true)
+            }
         }
-    }
 
-     cameraGalleryManager = remember {
+    val galleryPermissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            viewModel.updateGalleryPermission(granted)
+            if (granted) {
+                cameraGalleryManager.openGallery(true)
+            }
+        }
+
+    cameraGalleryManager = remember {
         CameraGalleryManager(
             context = context,
             pickImageLauncher = pickImageLauncher,
@@ -165,6 +188,7 @@ fun AddClothes(
                                 contentScale = ContentScale.Fit
                             )
                         }
+
                         selectedImageUri != null -> {
                             Image(
                                 painter = rememberAsyncImagePainter(selectedImageUri),
@@ -175,6 +199,7 @@ fun AddClothes(
                                 contentScale = ContentScale.Fit
                             )
                         }
+
                         else -> {
                             Surface(
                                 shape = RoundedCornerShape(20.dp),
@@ -220,56 +245,69 @@ fun AddClothes(
                         BodyText(text = StringConstants.clotheDetail, fontWeight = FontWeight.W700)
                         Divider()
                         Text(text = "${StringConstants.addedOn} $currentDate")
-                        Text(text = "${StringConstants.category}: $detectedType")
+                        Text(text = "${StringConstants.category}: ${selectedCategory ?: detectedType ?: "Bilinmeyen"}")
                     }
                     if (suitableConditions.isNotEmpty()) {
-                        Text(text = "${StringConstants.suitableCondition} ${suitableConditions.joinToString()}")
+                        Text(text = "${StringConstants.suitableCondition} ${suitableConditions}")
                     }
+
                 }
 
                 if (selectedImageUri != null && detectedType != null) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
+                    Column {
                         OutlinedButton(
-                            onClick = {
-                                viewModel.saveClothes { success, errorMessage ->
-                                    coroutineScope.launch {
-                                        if (success) {
-                                            navigator.navigate(
-                                                route = NavigationRoutes.Wardrobe,
-                                                popUpTo = NavigationRoutes.AddClothes,
-                                                inclusive = true
-                                            )
-                                            snackbarHostState.showSnackbar(
-                                                message = StringConstants.clothesSuccesfly,
-                                                actionLabel = StringConstants.success
-                                            )
-                                            viewModel.clearSelection()
-                                        } else {
-                                            snackbarHostState.showSnackbar(
-                                                message = "Hata: $errorMessage",
-                                                actionLabel = StringConstants.error
-                                            )
+                            onClick = { showCategorySheet = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Outlined.ChangeCircle, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            BodyText("Kategori Seç")
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    viewModel.saveClothes(
+                                        category = selectedCategory ?: detectedType ?: "Bilinmeyen"
+                                    ) { success, errorMessage ->
+                                        coroutineScope.launch {
+                                            if (success) {
+                                                navigator.navigate(
+                                                    route = NavigationRoutes.Wardrobe,
+                                                    popUpTo = NavigationRoutes.AddClothes,
+                                                    inclusive = true
+                                                )
+                                                snackbarHostState.showSnackbar(
+                                                    message = StringConstants.clothesSuccesfly,
+                                                    actionLabel = StringConstants.success
+                                                )
+                                                viewModel.clearSelection()
+                                            } else {
+                                                snackbarHostState.showSnackbar(
+                                                    message = "Hata: $errorMessage",
+                                                    actionLabel = StringConstants.error
+                                                )
+                                            }
                                         }
                                     }
+                                },
+                                enabled = !isSaving
+                            ) {
+                                if (isSaving) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    BodyText(StringConstants.save)
                                 }
-                            },
-                            enabled = !isSaving
-                        ) {
-                            if (isSaving) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                BodyText(StringConstants.save)
                             }
-                        }
 
-                        OutlinedButton(onClick = { viewModel.clearSelection() }) {
-                            BodyText(StringConstants.deleteCancel)
+                            OutlinedButton(onClick = { viewModel.clearSelection() }) {
+                                BodyText(StringConstants.deleteCancel)
+                            }
                         }
                     }
                 }
@@ -315,16 +353,85 @@ fun AddClothes(
                         }
                     }
                 }
+                if (showCategorySheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showCategorySheet = false },
+                        sheetState = sheetState,
+                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                        containerColor = Color.White,
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color.White)
+                                .padding(24.dp)
+                                .fillMaxHeight(0.5f)
+                        ) {
+                            BodyText(StringConstants.chooseCategory, fontWeight = FontWeight.Bold)
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(color = Color.White)
+                            ) {
+                                itemsIndexed(labelList) { index, label ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                selectedCategory = label
+                                                viewModel.updateSuitableConditionsByCategory(label)
+                                                showCategorySheet = false
+                                            }
+                                            .padding(vertical = 12.dp, horizontal = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = if (selectedCategory == label)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                Color.Transparent,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        BodyText(
+                                            text = label
+                                        )
+                                    }
+
+
+                                    // Dashed Divider (son öğe hariç)
+                                    if (index < labelList.lastIndex) {
+                                        DashedDivider(
+                                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+                                        )
+                                    }
+                                }
+                            }
+
+
+                        }
+                    }
+                }
             }
         }
+
+
     }
 }
 
+
 fun createImageUri(context: android.content.Context): Uri {
-    val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
+    val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault())
+        .format(java.util.Date())
     val contentValues = android.content.ContentValues().apply {
         put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "JPEG_$timestamp.jpg")
         put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
     }
-    return context.contentResolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)!!
+    return context.contentResolver.insert(
+        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        contentValues
+    )!!
 }

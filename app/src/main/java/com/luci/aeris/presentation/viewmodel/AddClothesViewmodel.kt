@@ -128,11 +128,13 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
     }
 
 
-    fun saveClothes(onResult: (Boolean, String?) -> Unit) {
+    fun saveClothes(category: String, onResult: (Boolean, String?) -> Unit) {
         val photoUri = _backgroundRemovedUri.value ?: _selectedImageUri.value
-        val type = _detectedType.value
+        val type = category
+        updateSuitableConditionsByCategory(category)
+
         val conditions = _suitableConditions.value
-        print(conditions)
+
         if (photoUri == null) {
             onResult(false, StringConstants.photoNotSelected)
             return
@@ -145,13 +147,13 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
         }
 
         viewModelScope.launch {
-            _isSaving.value = true  // Kayıt işlemi başlıyor
+            _isSaving.value = true
             try {
                 val newClothes = Clothes(
                     id = UUID.randomUUID().toString(),
                     photoPath = photoUri.toString(),
                     dateAdded = SimpleDateFormat(StringConstants.dateFormat, Locale.getDefault()).format(Date()),
-                    type = type ?: "Bilinmeyen",
+                    type = type,
                     suitableWeather = conditions
                 )
 
@@ -162,14 +164,15 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
                     .set(newClothes)
                     .await()
 
-                _isSaving.value = false  // Kayıt başarılı, isSaving kapatılıyor
+                _isSaving.value = false
                 onResult(true, null)
             } catch (e: Exception) {
-                _isSaving.value = false  // Hata durumunda da kapatılıyor
+                _isSaving.value = false
                 onResult(false, e.message)
             }
         }
     }
+
 
     fun clearSelection() {
         _selectedImageUri.value = null
@@ -201,6 +204,17 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+    fun updateSuitableConditionsByCategory(category: String) {
+        _suitableConditions.value = when (category.lowercase()) {
+            "caps", "sunglasses", "t-shirt", "shirt", "short", "sandals" -> listOf("Hot", "Sunny")
+            "hoodie", "sweter", "pant", "tracksuit" -> listOf("Warm", "Cool")
+            "coat", "denimcoat", "jacket", "raincoat" -> listOf("Cold", "Windy", "Rainy")
+            "winter beret" -> listOf("Cold", "Snowy")
+            "dress", "skirt", "heels" -> listOf("Warm", "Hot")
+            "formal shoes", "casual shoes", "sports shoes" -> listOf("All Conditions", "Dry")
+            else -> emptyList()
         }
     }
 }

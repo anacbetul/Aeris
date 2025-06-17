@@ -81,5 +81,6 @@ class StringConstants {
         const val checkConnection = "Checking connection..."
         const val cameraDenied="Camera permission denied. Please enable it from settings."
         const val galleryDenied="Gallery permission denied. Please enable it from settings."
+        const val chooseCategory="Choose Category"
     }
 }
