@@ -56,6 +56,7 @@ import com.luci.aeris.R
 import com.luci.aeris.presentation.viewmodel.ChooseOutfitViewModel
 import com.luci.aeris.presentation.viewmodel.WardrobeViewmodel
 import com.luci.aeris.presentation.viewmodel.WeatherViewModel
+import com.luci.aeris.utils.constants.StringConstants
 import com.luci.aeris.utils.constants.StringConstants.Companion.clothes
 import com.luci.aeris.utils.navigator.Navigator
 import java.time.LocalDate
@@ -80,97 +81,111 @@ fun ChooseOutfitScreen(
             }
         }
     }
+    val orderedNonEmptyCategories = recommendCategories.mapNotNull { category ->
+        filteredClothesState[category]?.let { state ->
+            if (state.value.isNotEmpty()) category to state else null
+        }
+    }
+
 
     val nonEmptyCategories = filteredClothesState.filter { it.value.value.isNotEmpty() }
-
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        nonEmptyCategories.forEach() { (category, clothesState) ->
-            item {
-                ItemCard(
-                    clothes = clothesState.value,
-                    onRemove = { clothesId ->
-                        clothesState.value = clothesState.value.filterNot { it.id == clothesId }
+    if (orderedNonEmptyCategories.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = StringConstants.dontHaveClothes)
+        }} else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                orderedNonEmptyCategories.forEach() { (category, clothesState) ->
+                    item {
+                        ItemCard(
+                            clothes = clothesState.value,
+                            onRemove = { clothesId ->
+                                clothesState.value =
+                                    clothesState.value.filterNot { it.id == clothesId }
+                            }
+                        )
                     }
-                )
+                }
             }
         }
     }
-}
 
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun ItemCard(
-    clothes: List<Clothes>,
-    onRemove: (String) -> Unit
-) {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val screenWidth = configuration.screenWidthDp.dp
-    val cardWidth = screenHeight / 5
-    val spacing = 12.dp
-
-    val density = LocalDensity.current
-    val paddingHorizontal = with(density) { ((screenHeight - cardWidth) / 2).toPx() }
-
-    val listState = rememberLazyListState()
-
-    LazyRow(
-        state = listState,
-        flingBehavior = rememberSnapFlingBehavior(lazyListState = listState),
-        contentPadding = PaddingValues(horizontal = (screenWidth - cardWidth) / 2),
-        horizontalArrangement = Arrangement.spacedBy(spacing),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(cardWidth + 24.dp)
+    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    fun ItemCard(
+        clothes: List<Clothes>,
+        onRemove: (String) -> Unit
     ) {
-        items(clothes.size, key = { clothes[it].id }) { index ->
-            val clothingItem = clothes[index]
+        val configuration = LocalConfiguration.current
+        val screenHeight = configuration.screenHeightDp.dp
+        val screenWidth = configuration.screenWidthDp.dp
+        val cardWidth = screenHeight / 5
+        val spacing = 12.dp
 
-            Box(
-                modifier = Modifier
-                    .width(cardWidth)
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(16.dp))
-            ) {
+        val density = LocalDensity.current
+        val paddingHorizontal = with(density) { ((screenHeight - cardWidth) / 2).toPx() }
+
+        val listState = rememberLazyListState()
+
+        LazyRow(
+            state = listState,
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = listState),
+            contentPadding = PaddingValues(horizontal = (screenWidth - cardWidth) / 2),
+            horizontalArrangement = Arrangement.spacedBy(spacing),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(cardWidth + 24.dp)
+        ) {
+            items(clothes.size, key = { clothes[it].id }) { index ->
+                val clothingItem = clothes[index]
+
                 Box(
                     modifier = Modifier
-                        .matchParentSize()
-                        .background(Color.Gray.copy(alpha = 0.2f))
-                        .blur(16.dp)
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(4.dp)
+                        .width(cardWidth)
+                        .aspectRatio(1f)
                         .clip(RoundedCornerShape(16.dp))
                 ) {
-                    Column {
-                        Box {
-                            Image(
-                                painter = rememberAsyncImagePainter(model = clothingItem.photoPath),
-                                contentDescription = clothingItem.type,
-                                modifier = Modifier.aspectRatio(1f),
-                                contentScale = ContentScale.Crop
-                            )
-                            Icon(
-                                imageVector = Icons.Filled.Remove,
-                                contentDescription = "Sil",
-                                tint = Color.Red,
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(6.dp)
-                                    .clickable {
-                                        onRemove(clothingItem.id)
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.Gray.copy(alpha = 0.2f))
+                            .blur(16.dp)
+                    )
 
-                                    }
-                                    .size(20.dp)
-                            )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(4.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                    ) {
+                        Column {
+                            Box {
+                                Image(
+                                    painter = rememberAsyncImagePainter(model = clothingItem.photoPath),
+                                    contentDescription = clothingItem.type,
+                                    modifier = Modifier.aspectRatio(1f),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Icon(
+                                    imageVector = Icons.Filled.Remove,
+                                    contentDescription = "Remove",
+                                    tint = Color.Red,
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(6.dp)
+                                        .clickable {
+                                            onRemove(clothingItem.id)
+
+                                        }
+                                        .size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
         }
     }
-}

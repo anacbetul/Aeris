@@ -67,7 +67,7 @@ fun Profile(
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary)
+                .background(MaterialTheme.colorScheme.secondary)
                 .align(Alignment.CenterHorizontally)
         ) {
             Icon(
@@ -153,7 +153,7 @@ fun Profile(
             }) {
                 BodyText(
                     StringConstants.deleteAccount,
-                    fontSize = 12.sp,
+//                    fontSize = 12.sp,
                     textColor = MaterialTheme.colorScheme.error
                 )
             }
@@ -203,7 +203,7 @@ fun GenderDropdownMenu(
         TextButton(onClick = { expanded = true }) {
             BodyText(
                 text = selectedGender.ifEmpty { StringConstants.selectGender },
-                textColor = MaterialTheme.colorScheme.primary
+                textColor = MaterialTheme.colorScheme.secondary
             )
         }
 

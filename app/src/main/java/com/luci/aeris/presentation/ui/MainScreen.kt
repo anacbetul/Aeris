@@ -36,6 +36,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -87,6 +88,7 @@ fun MainScreen(navigator: Navigator) {
     val recommendCategories by chooseOutfitViewModel.recommendedCategories.collectAsState()
     val clothesByCategory = wardrobeViewModel.clothesByCategory.collectAsState().value
     val filteredClothesByCategory = clothesByCategory.filterKeys { it in recommendCategories }
+    val isContentReady = recommendCategories.isNotEmpty() && filteredClothesByCategory.isNotEmpty()
 
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val cardSize = screenWidth / 2
@@ -103,83 +105,18 @@ fun MainScreen(navigator: Navigator) {
             clothesFlow = wardrobeViewModel.clothesByCategory
         )
     }
-    SwipeRefresh(
-        state = swipeRefreshState,
-        onRefresh = {
-            viewModel.loadWeather(location, unitGroup)
-            wardrobeViewModel.refresh()
-        },
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item {
-                WeatherScreen(viewModel = viewModel)
-            }
-            item {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(cardHeight * 2), // sabit yükseklik VERMEN LAZIM
-                    verticalArrangement = Arrangement.spacedBy(spacing),
-                    horizontalArrangement = Arrangement.spacedBy(spacing),
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    items(recommendCategories.size) { index ->
-                        Box(
-                            modifier = Modifier
-                                .width(cardSize)
-                                .aspectRatio(1f)
-                                .clip(RoundedCornerShape(16.dp))
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .background(Color.Gray.copy(alpha = 0.2f))
-                                    .blur(16.dp)
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(4.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                            ) {
-                                Column {
-                                    val category = recommendCategories[index]
-                                    val clothes = filteredClothesByCategory[category]
-                                    val firstClothing = clothes?.firstOrNull()
-
-                                    if (firstClothing != null) {
-                                        val painter = rememberAsyncImagePainter(
-                                            model = firstClothing.photoPath
-                                        )
-
-                                        Image(
-                                            painter = painter,
-                                            contentDescription = firstClothing.type,
-                                            modifier = Modifier
-                                                .aspectRatio(1f),
-                                            contentScale = ContentScale.Crop
-                                        )
-
-                                    } else {
-                                        Text(text = "Bu kategoride kıyafet yok.")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            item {
+    Scaffold(
+        bottomBar = {
+            if (isContentReady) {
                 Button(
                     onClick = {
-                        navigator.navigate("choose_outfit?categories=${recommendCategories.joinToString(",")}")
+                        navigator.navigate(
+                            "choose_outfit?categories=${
+                                recommendCategories.joinToString(
+                                    ","
+                                )
+                            }"
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -191,7 +128,84 @@ fun MainScreen(navigator: Navigator) {
                 ) {
                     Text("Show Suggested Outfits")
                 }
+            }
+        }
+    ) { paddingValues ->
+        SwipeRefresh(
+            state = swipeRefreshState,
+            onRefresh = {
+                viewModel.loadWeather(location, unitGroup)
+                wardrobeViewModel.refresh()
+            },
+            modifier = Modifier
+                .fillMaxSize()
+//                .padding(paddingValues),
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                item {
+                    WeatherScreen(viewModel = viewModel)
+                }
+                item {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(cardHeight * 2), // sabit yükseklik VERMEN LAZIM
+                        verticalArrangement = Arrangement.spacedBy(spacing),
+                        horizontalArrangement = Arrangement.spacedBy(spacing),
+                        contentPadding = PaddingValues(8.dp)
+                    ) {
+                        items(recommendCategories.size) { index ->
+                            Box(
+                                modifier = Modifier
+                                    .width(cardSize)
+                                    .aspectRatio(1f)
+                                    .clip(RoundedCornerShape(16.dp))
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(Color.Gray.copy(alpha = 0.2f))
+                                        .blur(16.dp)
+                                )
 
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(4.dp)
+                                        .clip(RoundedCornerShape(16.dp))
+                                ) {
+                                    Column {
+                                        val category = recommendCategories[index]
+                                        val clothes = filteredClothesByCategory[category]
+                                        val firstClothing = clothes?.firstOrNull()
+
+                                        if (firstClothing != null) {
+                                            val painter = rememberAsyncImagePainter(
+                                                model = firstClothing.photoPath
+                                            )
+
+                                            Image(
+                                                painter = painter,
+                                                contentDescription = firstClothing.type,
+                                                modifier = Modifier
+                                                    .aspectRatio(1f),
+                                                contentScale = ContentScale.Crop
+                                            )
+
+                                        } else {
+                                            Text(text = "Bu kategoride kıyafet yok.")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

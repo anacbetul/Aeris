@@ -146,7 +146,7 @@ fun LoginScreen(navigator: Navigator) {
                     Icon(
                         imageVector = Icons.Default.AccountBox,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(60.dp)
                     )
                     VerticalSpacer8()
@@ -206,7 +206,7 @@ fun LoginScreen(navigator: Navigator) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
                         enabled = !viewModel.isLoading
                     ) {
                         if (viewModel.isLoading) {

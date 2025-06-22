@@ -108,7 +108,7 @@ fun Wardrobe(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .fillMaxHeight(0.7f)  // ekranın %70'i kadar yükseklik
+                            .fillMaxHeight()  // ekranın %70'i kadar yükseklik
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {

@@ -8,13 +8,12 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import androidx.compose.runtime.mutableStateOf
+import com.luci.aeris.BuildConfig
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yourapp.repository.ModelRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.BuildConfig
 import com.google.firebase.firestore.FirebaseFirestore
 import com.luci.aeris.data.RemoveBackgroundRepository
 import com.luci.aeris.presentation.ui.createImageUri
@@ -26,6 +25,7 @@ import kotlinx.coroutines.tasks.await
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+
 class AddClothesViewModel(application: Application) : AndroidViewModel(application) {
 
     private val context = getApplication<Application>().applicationContext
@@ -67,7 +67,7 @@ class AddClothesViewModel(application: Application) : AndroidViewModel(applicati
 
     private val modelRepository = ModelRepository(application)
 
-    private val removeBgApiKey = "9rHvFSa3Nov4GpQNmd3TyCNr"
+    private val removeBgApiKey = BuildConfig.REMOVE_BG_API_KEY
     private val removeBackgroundRepository = RemoveBackgroundRepository(removeBgApiKey)
 
     private val _backgroundRemovedBitmap = MutableStateFlow<Bitmap?>(null)

@@ -2,7 +2,7 @@ package com.luci.aeris.utils.constants
 
 class StringConstants {
     companion object {
-        const val title = "Aeris"
+        const val title = "AI-ris"
         const val gender = "Gender"
         const val signUp = "Sign Up"
         const val email = "Email"
@@ -45,7 +45,7 @@ class StringConstants {
         const val woman = "Woman"
         const val man = "Man"
         const val other = "Other"
-        const val selectGender = "Select your gender"
+        const val selectGender = "Select your gender:"
         const val confirmExit = "Are you sure you want to sign out of your account?"
         const val signOut = "Sign Out"
         const val stayInApp = "Stay Logged In"
