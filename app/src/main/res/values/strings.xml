@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Aeris</string>
+    <string name="app_name">AI-RIS</string>
     <string name="default_web_client_id">632656989474-9u6ocockh87e8fq60gcn7d1akvkg593u.apps.googleusercontent.com</string>
     <string name="facebook_app_id"></string>
     <string name="fb_login_protocol_scheme">f</string>

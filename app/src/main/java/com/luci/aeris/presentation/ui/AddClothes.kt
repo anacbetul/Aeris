@@ -402,7 +402,6 @@ fun AddClothes(
                                     }
 
 
-                                    // Dashed Divider (son öğe hariç)
                                     if (index < labelList.lastIndex) {
                                         DashedDivider(
                                             color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
