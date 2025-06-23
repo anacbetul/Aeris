@@ -1,0 +1,6 @@
+merged_images
+newdata
+*.pkl
+*.h5
+*.tflite
+grafikler
