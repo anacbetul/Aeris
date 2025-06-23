@@ -3,4 +3,6 @@ newdata
 *.pkl
 *.h5
 *.tflite
-grafikler
+grafikler/EfficientNetB0
+grafikler/MobileNet
+grafikler/GoogleNet
