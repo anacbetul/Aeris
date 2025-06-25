@@ -261,7 +261,7 @@ fun AddClothes(
                         ) {
                             Icon(Icons.Outlined.ChangeCircle, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            BodyText("Kategori Seç")
+                            BodyText("Change Category")
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -270,7 +270,7 @@ fun AddClothes(
                             OutlinedButton(
                                 onClick = {
                                     viewModel.saveClothes(
-                                        category = selectedCategory ?: detectedType ?: "Bilinmeyen"
+                                        category = selectedCategory ?: detectedType ?: "Undefined"
                                     ) { success, errorMessage ->
                                         coroutineScope.launch {
                                             if (success) {
