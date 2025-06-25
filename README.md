@@ -25,17 +25,29 @@ AI-ris, kullanıcıların konumlarına ve anlık hava durumuna göre uygun kıya
 
 ## 📸 Ekran Görüntüleri
 
-### Giriş Sayfası
-<img src="app/src/main/assets/screenshots/login_screen.png" width="300"/>
+<table>
+  <tr>
+    <td align="center">
+      <strong>Giriş Sayfası</strong><br>
+      <img src="app/src/main/assets/screenshots/login_screen.png" width="300"/>
+    </td>
+    <td align="center">
+      <strong>Ana Sayfa</strong><br>
+      <img src="app/src/main/assets/screenshots/main_screen.png" width="300"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Kıyafet Öneri Sayfası</strong><br>
+      <img src="app/src/main/assets/screenshots/suggestion_screen.png" width="300"/>
+    </td>
+    <td align="center">
+      <strong>Gardırop Sayfası</strong><br>
+      <img src="app/src/main/assets/screenshots/wardrobe_screen.png" width="300"/>
+    </td>
+  </tr>
+</table>
 
-### Ana Sayfa
-<img src="app/src/main/assets/screenshots/main_screen.png" width="300"/>
-
-### Kıyafet Öneri Sayfası
-<img src="app/src/main/assets/screenshots/suggestion_screen.png" width="300"/>
-
-### Gardırop Sayfası
-<img src="app/src/main/assets/screenshots/wardrobe_screen.png" width="300"/>
 ## 📦 Kurulum
 
 1. Bu repoyu klonlayın:
