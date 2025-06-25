@@ -102,7 +102,7 @@ Uygulamayı çalıştırın (Run > Run 'app')
 
 ###### **Betül Anaçoğlu**
 📍Computer Engineer
-🔗 [LinkedIn](www.linkedin.com/in/betul-anacoglu)
+🔗 [LinkedIn](https://www.linkedin.com/in/betul-anacoglu)
 📧 betul.anacoglu@gmail.com
 
 ###### **Furkan Kazım Çam**
