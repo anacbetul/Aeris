@@ -98,7 +98,9 @@ Uygulamada kullanıcı verilerini (örneğin kıyafet arşivi) Firestore ile sak
 
 Uygulamayı çalıştırın (Run > Run 'app')
 
-### Bursa Teknik Üniversitesi Bilgisayar Mühendisliği 2024-2025 Bahar dönemi bitirme projesi kapsamında yapılmıştır.
+
+
+#### ⚠️ Bursa Teknik Üniversitesi Bilgisayar Mühendisliği 2024-2025 Bahar dönemi bitirme projesi kapsamında yapılmıştır.
 
 # 👩‍💻 Geliştiriciler
 
