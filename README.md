@@ -22,6 +22,7 @@ AI-ris, kullanıcıların konumlarına ve anlık hava durumuna göre uygun kıya
 - **Firebase Authentication** – Google ile giriş
 - **Firebase Firestore** – Bulut veritabanı
 
+## 📸 Tanıtım Videosu için [tıklayınız](https://www.youtube.com/watch?v=HSJqPuKRYGA&ab_channel=FurkanKaz%C4%B1m%C3%87am).
 
 ## 📸 Ekran Görüntüleri
 
